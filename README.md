@@ -68,7 +68,7 @@ function claimRewards(address user) external {}
 
 ### Admin Functions
 
-- lock: create lock for other user
+- lockFor: create lock for other user
 
 ```
 function lockFor(address user, uint256 amount, uint256 period) external {}
