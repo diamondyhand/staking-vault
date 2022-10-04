@@ -2,7 +2,7 @@
 
 Users will lock ERC20 token into the vault for up to 4 years and earn more as rewards. <br/>
 Staking and reward Tokens are same. <br/>
-Example: If you lock 100 USDT tokens for 4 year, you will get more USDT tokens as rewwards when unlock. <br/>
+Example: If you lock 100 USDT tokens, you will get more USDT tokens as rewwards when unlock. <br/>
 
 ## Main logic
 
