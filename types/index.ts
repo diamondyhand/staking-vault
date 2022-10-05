@@ -10,6 +10,7 @@ export type { IERC3156FlashBorrower } from "./IERC3156FlashBorrower";
 export type { IERC3156FlashLender } from "./IERC3156FlashLender";
 export type { ERC20Mock } from "./ERC20Mock";
 export type { FlashBorrowerMock } from "./FlashBorrowerMock";
+export type { StakingVault } from "./StakingVault";
 export type { Vault } from "./Vault";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
@@ -21,4 +22,5 @@ export { IERC3156FlashBorrower__factory } from "./factories/IERC3156FlashBorrowe
 export { IERC3156FlashLender__factory } from "./factories/IERC3156FlashLender__factory";
 export { ERC20Mock__factory } from "./factories/ERC20Mock__factory";
 export { FlashBorrowerMock__factory } from "./factories/FlashBorrowerMock__factory";
+export { StakingVault__factory } from "./factories/StakingVault__factory";
 export { Vault__factory } from "./factories/Vault__factory";

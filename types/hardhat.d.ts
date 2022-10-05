@@ -53,6 +53,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlashBorrowerMock__factory>;
     getContractFactory(
+      name: "StakingVault",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StakingVault__factory>;
+    getContractFactory(
       name: "Vault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Vault__factory>;
@@ -107,6 +111,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.FlashBorrowerMock>;
+    getContractAt(
+      name: "StakingVault",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.StakingVault>;
     getContractAt(
       name: "Vault",
       address: string,
