@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts\mock\FlashBorrowerMock.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/mock/</a> FlashBorrowerMock.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/12</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/5</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/22</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
+&nbsp;
+import '../interfaces/IERC20.sol';
+import '../interfaces/IERC3156FlashBorrower.sol';
+import '../interfaces/IERC3156FlashLender.sol';
+import 'hardhat/console.sol';
+&nbsp;
+/**
+ * @author MasterDevv
+ * @dev Extension of {ERC20} that allows flash borrowing.
+ */
+contract FlashBorrowerMock is IERC3156FlashBorrower {
+    enum Action {
+        NORMAL,
+        OTHER,
+        SPECIAL
+    }
+&nbsp;
+    IERC3156FlashLender lender;
+&nbsp;
+<span class="fstat-no" title="function not covered" >    constructor(IERC3156FlashLender lender_) {</span>
+<span class="cstat-no" title="statement not covered" >        lender = lender_</span>;
+    }
+&nbsp;
+    /**
+     * @dev Receive a flash loan.
+     * @param initiator The initiator of the loan.
+     * @param token The loan currency.
+     * @param amount The amount of tokens lent.
+     * @param fee The additional amount of tokens to repay.
+     * @param data Arbitrary data structure, intended to contain user-defined parameters.
+     * @return The keccak256 hash of "ERC3156FlashBorrower.onFlashLoan"
+     */
+<span class="fstat-no" title="function not covered" >    function onFlashLoan(</span>
+        address initiator,
+        address token,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata data
+    ) external view override returns (bytes32) {
+<span class="cstat-no" title="statement not covered" >        bytes32 successData;</span>
+<span class="cstat-no" title="statement not covered" >        require(initiator == address(this), 'FlashBorrower: Untrusted loan initiator')</span>;
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == address(lender), 'FlashBorrower: Untrusted lender')</span>;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        Action action = abi.decode(data, (Action));</span>
+<span class="cstat-no" title="statement not covered" >        if (action == Action.NORMAL) {</span>
+            // do one thing
+<span class="cstat-no" title="statement not covered" >            successData = keccak256('ERC3156FlashBorrower.onFlashLoan')</span>;
+        } else <span class="cstat-no" title="statement not covered" >if (action == Action.OTHER) {</span>
+            // do another
+<span class="cstat-no" title="statement not covered" >            successData = keccak256('ERC3156FlashBorrower.onFlashLoan Error')</span>;
+        } else {
+<span class="cstat-no" title="statement not covered" >            successData = keccak256('ERC3156FlashBorrower.onFlashLoan Error')</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        return successData;</span>
+    }
+&nbsp;
+    /**
+     * @dev User call this function for flashLoan.
+     * @param token ERC20Token address
+     * @param amount flashLoan amount
+     */
+<span class="fstat-no" title="function not covered" >    function flashBorrow(</span>
+        address token,
+        uint256 amount,
+        Action key
+    ) public {
+<span class="cstat-no" title="statement not covered" >        bytes memory data;</span>
+<span class="cstat-no" title="statement not covered" >        if (key == Action.NORMAL) {</span>
+<span class="cstat-no" title="statement not covered" >            data = abi.encode(Action.NORMAL)</span>;
+        } else <span class="cstat-no" title="statement not covered" >if (key == Action.OTHER) {</span>
+<span class="cstat-no" title="statement not covered" >            data = abi.encode(Action.OTHER)</span>;
+        } else {
+<span class="cstat-no" title="statement not covered" >            data = abi.encode(key)</span>;
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        uint256 _allowance = IERC20(token).allowance(address(this), address(lender));</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _fee = lender.flashFee(token, amount);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _repayment = amount + _fee;</span>
+<span class="cstat-no" title="statement not covered" >        IERC20(token).approve(address(lender), _allowance + _repayment)</span>;
+<span class="cstat-no" title="statement not covered" >        lender.flashLoan(this, token, amount, data)</span>;
+    }
+&nbsp;
+    /**
+     * @dev Transfer Function to transfer vault shares from one to another.
+     * Note This function can be called by user and user-approved contracts.
+     * @param _user spender address to transfer
+     * @param _receiver receiver address to transfer
+     * @param _token token(ERC20) address to transfer
+     * @param _share A amount of vault share to transfer
+     */
+<span class="fstat-no" title="function not covered" >    function transfer(</span>
+        address _user,
+        address _receiver,
+        address _token,
+        uint256 _share
+    ) external {
+<span class="cstat-no" title="statement not covered" >        lender.transfer(_user, _receiver, _token, _share)</span>;
+    }
+&nbsp;
+    /**
+     * @dev User withdraws the underlying tokens with vault shares.
+     * Note This function can be called by user and user-approved contracts.
+     * @param _user User address to withdraw.
+     * @param _token Token address to withdraw.
+     */
+<span class="fstat-no" title="function not covered" >    function withdraw(address _user, address _token) external {</span>
+<span class="cstat-no" title="statement not covered" >        lender.withdraw(_user, _token)</span>;
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 04 2022 21:31:23 GMT-0700 (Pacific Daylight Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
