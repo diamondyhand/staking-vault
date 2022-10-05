@@ -10,7 +10,6 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 contract StakingVault is Ownable {
     uint256 public constant MINIMUM_LOCK_PERIOD = 30 days;
     uint256 public constant MAXIMUM_LOCK_PERIOD = 4 * 365 days;
-
     uint256 public total_rewards;
     uint256 public total_locked_amount;
 
@@ -49,9 +48,9 @@ contract StakingVault is Ownable {
 
     modifier updateReward(address _user) {
         lockInfo storage LockInfo = lockInfoList[_user];
-        total_rewards -= LockInfo.reward;
+        total_rewards -= LockInfo.reward * 1e18;
         LockInfo.reward = getClaimableRewards(_user);
-        total_rewards += LockInfo.reward;
+        total_rewards += LockInfo.reward * 1e18;
         _;
     }
 
@@ -74,7 +73,7 @@ contract StakingVault is Ownable {
         isPeriod(period)
         updateReward(msg.sender)
     {
-        stakingToken.transfer(address(this), amount);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
         _lock(msg.sender, amount, period);
     }
 
@@ -90,7 +89,7 @@ contract StakingVault is Ownable {
     {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
         require(LockInfo.lockStatus == true, 'StakingVault: You must be create lock.');
-        stakingToken.transfer(address(this), amount);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
         uint256 lockedPeriod = block.timestamp - LockInfo.updateTime;
         lockedPeriod = lockedPeriod >= LockInfo.period ? LockInfo.period : lockedPeriod;
         LockInfo.sigmaX += LockInfo.amount * lockedPeriod;
@@ -115,7 +114,7 @@ contract StakingVault is Ownable {
         require(LockInfo.lockStatus == true, 'StakingVault: You must be create lock.');
         require(block.timestamp - LockInfo.startTime >= 7 days, "StakingVault: You can't unlock.");
 
-        stakingToken.transfer(msg.sender, amount);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
         LockInfo.amount -= amount;
     }
 
@@ -125,7 +124,6 @@ contract StakingVault is Ownable {
      * @return reward
      */
     function getClaimableRewards(address user) public view isUnPaused returns (uint256 reward) {
-        require(user == msg.sender, 'StakingVault: Not permission.');
         lockInfo storage LockInfo = lockInfoList[user];
         reward =
             (LockInfo.sigmaX + (block.timestamp - LockInfo.updateTime) * LockInfo.amount) *
@@ -139,7 +137,7 @@ contract StakingVault is Ownable {
     function claimRewards(address user) external isUnPaused updateReward(user) {
         require(user == msg.sender, 'StakingVault: Not permission.');
         lockInfo storage LockInfo = lockInfoList[user];
-        uint256 reward = LockInfo.reward;
+        uint256 reward = LockInfo.reward / 1e18;
         if (reward > 0) {
             LockInfo.reward = 0;
             stakingToken.transfer(user, reward);
@@ -154,14 +152,14 @@ contract StakingVault is Ownable {
     function compound(address user, uint256 rewards) external isUnPaused {
         lockInfo storage LockInfo = lockInfoList[user];
         require(user == msg.sender, 'StakingVault: Not permission.');
-        require(rewards <= LockInfo.reward, 'StakingVault: Not Enough compound rewards.');
+        require(rewards <= LockInfo.reward / 1e18, 'StakingVault: Not Enough compound rewards.');
 
         LockInfo.amount += rewards;
-        LockInfo.reward -= rewards;
+        LockInfo.reward -= rewards * 1e18;
     }
 
     function getRewardPerTokenForOneSecond() internal view returns (uint256 secodeReward) {
-        secodeReward = (total_rewards / total_locked_amount) / MAXIMUM_LOCK_PERIOD;
+        secodeReward = ((total_rewards * 1e18) / total_locked_amount) / MAXIMUM_LOCK_PERIOD;
     }
 
     /// Admin Functions
@@ -201,7 +199,7 @@ contract StakingVault is Ownable {
      */
     function notifyRewardAmount(uint256 reward) external onlyRewardDistributor {
         stakingToken.transferFrom(msg.sender, address(this), reward);
-        total_rewards += reward;
+        total_rewards += reward * 1e18;
     }
 
     /**
