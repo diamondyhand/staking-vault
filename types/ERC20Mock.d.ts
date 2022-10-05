@@ -146,6 +146,7 @@ export type TransferEvent = TypedEvent<
 >;
 
 export class ERC20Mock extends BaseContract {
+  [x: string]: any;
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
