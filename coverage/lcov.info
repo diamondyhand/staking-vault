@@ -69,7 +69,7 @@ FNDA:0,compound
 FNDA:0,getRewardPerTokenForOneSecond
 FNDA:0,lockFor
 FNDA:0,setRewardDistributor
-FNDA:1,setPause
+FNDA:2,setPause
 FNDA:0,_lock
 DA:34,3
 DA:38,0
@@ -101,7 +101,7 @@ DA:126,0
 DA:131,0
 DA:147,0
 DA:155,0
-DA:163,1
+DA:163,2
 DA:177,0
 DA:178,0
 DA:179,0

@@ -27,6 +27,8 @@ describe("StakingVault Contract Test.", () => {
       it("Add", async () => {
         console.log("stakingToken is ", StakingToken.address);
         await StakingVault.setPause(true);
+        await StakingVault.setPause(false);
+
       })
     });
   });
