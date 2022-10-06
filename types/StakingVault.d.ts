@@ -31,6 +31,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "lock(uint256,uint256)": FunctionFragment;
     "lockFor(address,uint256,uint256)": FunctionFragment;
     "lockInfoList(address)": FunctionFragment;
+    "notifyRewardAmount(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
@@ -82,6 +83,10 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "lockInfoList",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "notifyRewardAmount",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
@@ -144,6 +149,10 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "lockFor", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "lockInfoList",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "notifyRewardAmount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -275,15 +284,29 @@ export class StakingVault extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean
+      ] & {
         amount: BigNumber;
         period: BigNumber;
         startTime: BigNumber;
         updateTime: BigNumber;
-        xSum: BigNumber;
+        sigmaX: BigNumber;
+        reward: BigNumber;
         lockStatus: boolean;
       }
     >;
+
+    notifyRewardAmount(
+      reward: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -366,15 +389,29 @@ export class StakingVault extends BaseContract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+    [
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      boolean
+    ] & {
       amount: BigNumber;
       period: BigNumber;
       startTime: BigNumber;
       updateTime: BigNumber;
-      xSum: BigNumber;
+      sigmaX: BigNumber;
+      reward: BigNumber;
       lockStatus: boolean;
     }
   >;
+
+  notifyRewardAmount(
+    reward: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -454,15 +491,29 @@ export class StakingVault extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean
+      ] & {
         amount: BigNumber;
         period: BigNumber;
         startTime: BigNumber;
         updateTime: BigNumber;
-        xSum: BigNumber;
+        sigmaX: BigNumber;
+        reward: BigNumber;
         lockStatus: boolean;
       }
     >;
+
+    notifyRewardAmount(
+      reward: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -557,6 +608,11 @@ export class StakingVault extends BaseContract {
 
     lockInfoList(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    notifyRewardAmount(
+      reward: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
@@ -642,6 +698,11 @@ export class StakingVault extends BaseContract {
     lockInfoList(
       arg0: string,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    notifyRewardAmount(
+      reward: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;

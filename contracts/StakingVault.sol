@@ -49,7 +49,14 @@ contract StakingVault is Ownable {
 
     modifier updateReward(address _user) {
         lockInfo storage LockInfo = lockInfoList[_user];
+        total_rewards -= LockInfo.reward;
         LockInfo.reward = getClaimableRewards(_user);
+        total_rewards += LockInfo.reward;
+        _;
+    }
+
+    modifier onlyRewardDistributor() {
+        require(msg.sender == distributor, 'RewardDistributor can only call this function.');
         _;
     }
 
@@ -121,7 +128,7 @@ contract StakingVault is Ownable {
         require(user == msg.sender, 'StakingVault: Not permission.');
         lockInfo storage LockInfo = lockInfoList[user];
         reward =
-            (LockInfo.sigmaX + block.timestamp * LockInfo.updateTime) *
+            (LockInfo.sigmaX + (block.timestamp - LockInfo.updateTime) * LockInfo.amount) *
             getRewardPerTokenForOneSecond();
     }
 
@@ -190,6 +197,14 @@ contract StakingVault is Ownable {
     }
 
     /**
+     * @dev RewardDistributor function
+     */
+    function notifyRewardAmount(uint256 reward) external onlyRewardDistributor {
+        stakingToken.transferFrom(msg.sender, address(this), reward);
+        total_rewards += reward;
+    }
+
+    /**
      * @dev internal lock function with amount and period for create lock.
      * @param user user's address
      * @param amount amount for lock.
@@ -201,7 +216,6 @@ contract StakingVault is Ownable {
         uint256 period
     ) internal {
         lockInfo storage newInfo = lockInfoList[user];
-        total_locked_amount += amount;
         newInfo.amount = amount;
         newInfo.period = period;
         newInfo.startTime = block.timestamp;
