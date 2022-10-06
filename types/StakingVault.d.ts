@@ -41,7 +41,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "total_locked_amount()": FunctionFragment;
     "total_rewards()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "unlock(uint256,uint256)": FunctionFragment;
+    "unlock(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -117,7 +117,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "unlock",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -339,7 +339,6 @@ export class StakingVault extends BaseContract {
 
     unlock(
       amount: BigNumberish,
-      period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -444,7 +443,6 @@ export class StakingVault extends BaseContract {
 
   unlock(
     amount: BigNumberish,
-    period: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -539,11 +537,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    unlock(
-      amount: BigNumberish,
-      period: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    unlock(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -644,7 +638,6 @@ export class StakingVault extends BaseContract {
 
     unlock(
       amount: BigNumberish,
-      period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -738,7 +731,6 @@ export class StakingVault extends BaseContract {
 
     unlock(
       amount: BigNumberish,
-      period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

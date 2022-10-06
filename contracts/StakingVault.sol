@@ -51,11 +51,8 @@ contract StakingVault is Ownable {
         _;
     }
 
-    modifier isLocked() {
-        require(
-            lockInfoList[msg.sender].lockStatus == true,
-            'StakingVault: You must be create lock.'
-        );
+    modifier isLocked(address user) {
+        require(lockInfoList[user].lockStatus == true, 'StakingVault: You must be create lock.');
         _;
     }
 
@@ -116,28 +113,31 @@ contract StakingVault is Ownable {
     function increaselock(uint256 amount, uint256 period)
         external
         isUnPaused
-        isLocked
+        isLocked(msg.sender)
         moreThanZero(amount)
         isApproved(amount)
         updateReward(msg.sender)
     {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
-        require(
-            period + LockInfo.period < MAXIMUM_LOCK_PERIOD,
-            'StakingVault: increase period error.'
-        );
         if (block.timestamp - LockInfo.startTime >= LockInfo.period) {
             require(
-                period >= MINIMUM_LOCK_PERIOD,
-                'Because lock deadline, Period must be minimum one month.'
+                period >= MINIMUM_LOCK_PERIOD && period <= MAXIMUM_LOCK_PERIOD,
+                'Because locks deadline has expired, Period must be minimum one month.'
             );
-            _lock(msg.sender, amount, period);
+            LockInfo.period = period;
+            LockInfo.startTime = block.timestamp;
         } else {
+            require(
+                period + LockInfo.period <= MAXIMUM_LOCK_PERIOD,
+                'StakingVault: increase period error.'
+            );
+            // console.log('sigmaX is ', LockInfo.sigmaX);
             LockInfo.sigmaX += LockInfo.amount * LockInfo.period;
+            // console.log('sigmaX is ', LockInfo.sigmaX);
             LockInfo.period += period;
-            LockInfo.amount += amount;
-            LockInfo.updateTime = block.timestamp;
         }
+        LockInfo.updateTime = block.timestamp;
+        LockInfo.amount += amount;
         total_locked_amount += amount;
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
@@ -145,12 +145,11 @@ contract StakingVault is Ownable {
     /**
      * @dev unlock locked tokens with rewards.
      * @param amount amount for unlock.
-     * @param period period for unlock.
      */
-    function unlock(uint256 amount, uint256 period)
+    function unlock(uint256 amount)
         external
         isUnPaused
-        isLocked
+        isLocked(msg.sender)
         moreThanZero(amount)
         updateReward(msg.sender)
     {
@@ -159,7 +158,7 @@ contract StakingVault is Ownable {
             block.timestamp - LockInfo.startTime >= 7 days + LockInfo.period,
             'StakingVault: You can unlock after lock period.'
         );
-        require(amount <= LockInfo.amount, 'Amount error.');
+        require(amount <= LockInfo.amount, 'StakingVault: unlock amount error.');
         uint256 reward = LockInfo.reward;
         LockInfo.reward = 0;
         total_rewards -= reward;
@@ -175,7 +174,8 @@ contract StakingVault is Ownable {
      */
     function getClaimableRewards(address user) public view isUnPaused returns (uint256 reward) {
         lockInfo storage LockInfo = lockInfoList[user];
-        reward = (_getClaimableAddRewards(user) + LockInfo.reward);
+        console.log('total is ', total_locked_amount / 1e18);
+        reward = _getClaimableAddRewards(user) + LockInfo.reward;
     }
 
     /**
@@ -224,7 +224,7 @@ contract StakingVault is Ownable {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner {
+    ) external onlyOwner isLocked(user) {
         _lock(user, amount, period);
     }
 
@@ -279,8 +279,8 @@ contract StakingVault is Ownable {
     function _getClaimableAddRewards(address user) internal view returns (uint256 reward) {
         lockInfo storage LockInfo = lockInfoList[user];
         uint256 period = block.timestamp - LockInfo.updateTime;
-        if (block.timestamp > LockInfo.startTime + period) {
-            period = LockInfo.startTime + period - LockInfo.updateTime;
+        if (block.timestamp >= LockInfo.startTime + period) {
+            period = LockInfo.startTime + LockInfo.period - LockInfo.updateTime;
         }
         reward = (LockInfo.sigmaX + period * LockInfo.amount) * getRewardPerTokenForOneSecond();
         reward /= 1e18;
