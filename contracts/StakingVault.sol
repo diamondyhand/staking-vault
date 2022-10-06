@@ -103,12 +103,9 @@ contract StakingVault is Ownable {
             lockInfoList[msg.sender].lockStatus == false,
             'StakingVault: You have already locked it.'
         );
-        require(
-            stakingToken.allowance(msg.sender, address(this)) >= amount,
-            'StakingVault: You must be approve.'
-        );
-        stakingToken.transferFrom(msg.sender, address(this), amount);
+        total_locked_amount += amount;
         _lock(msg.sender, amount, period);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -129,14 +126,20 @@ contract StakingVault is Ownable {
             period + LockInfo.period < MAXIMUM_LOCK_PERIOD,
             'StakingVault: increase period error.'
         );
-        stakingToken.transferFrom(msg.sender, address(this), amount);
-        uint256 lockedPeriod = block.timestamp - LockInfo.updateTime;
-        lockedPeriod = lockedPeriod >= LockInfo.period ? LockInfo.period : lockedPeriod;
-        LockInfo.sigmaX += LockInfo.amount * lockedPeriod;
-        LockInfo.period += period;
-        LockInfo.amount += amount;
-        LockInfo.updateTime = block.timestamp;
+        if (block.timestamp - LockInfo.startTime >= LockInfo.period) {
+            require(
+                period >= MINIMUM_LOCK_PERIOD,
+                'Because lock deadline, Period must be minimum one month.'
+            );
+            _lock(msg.sender, amount, period);
+        } else {
+            LockInfo.sigmaX += LockInfo.amount * LockInfo.period;
+            LockInfo.period += period;
+            LockInfo.amount += amount;
+            LockInfo.updateTime = block.timestamp;
+        }
         total_locked_amount += amount;
+        stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -266,7 +269,6 @@ contract StakingVault is Ownable {
         LockInfo.startTime = block.timestamp;
         LockInfo.updateTime = block.timestamp;
         LockInfo.lockStatus = true;
-        total_locked_amount += amount;
     }
 
     /**
@@ -276,9 +278,11 @@ contract StakingVault is Ownable {
      */
     function _getClaimableAddRewards(address user) internal view returns (uint256 reward) {
         lockInfo storage LockInfo = lockInfoList[user];
-        reward = ((LockInfo.sigmaX + (block.timestamp - LockInfo.updateTime) * LockInfo.amount) *
-            getRewardPerTokenForOneSecond());
-        console.log('period is ', block.timestamp, LockInfo.updateTime);
+        uint256 period = block.timestamp - LockInfo.updateTime;
+        if (block.timestamp > LockInfo.startTime + period) {
+            period = LockInfo.startTime + period - LockInfo.updateTime;
+        }
+        reward = (LockInfo.sigmaX + period * LockInfo.amount) * getRewardPerTokenForOneSecond();
         reward /= 1e18;
     }
 }
