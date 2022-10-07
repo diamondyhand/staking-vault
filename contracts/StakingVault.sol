@@ -1,24 +1,21 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import 'hardhat/console.sol';
 import './interfaces/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
-
-// import '@openzeppelin/contracts/security/Pausable.sol';
+import '@openzeppelin/contracts/security/Pausable.sol';
 
 /**
  * @dev Staking Vault Contract
  */
-contract StakingVault is Ownable {
+contract StakingVault is Ownable, Pausable {
     uint256 public constant MINIMUM_LOCK_PERIOD = 30 days;
     uint256 public constant MAXIMUM_LOCK_PERIOD = 4 * 365 days;
     uint256 public totalRewards;
     uint256 public totalLockedAmount;
 
-    bool public paused;
     address public distributor;
     IERC20 public stakingToken;
-
     struct lockInfo {
         // locked amount
         uint256 amount;
@@ -44,11 +41,6 @@ contract StakingVault is Ownable {
      */
     constructor(address _stakingToken) {
         stakingToken = IERC20(_stakingToken);
-    }
-
-    modifier isUnPaused() {
-        require(paused == false, 'Contract paused.');
-        _;
     }
 
     modifier isLocked() {
@@ -86,7 +78,7 @@ contract StakingVault is Ownable {
      */
     function lock(uint256 amount, uint256 period)
         external
-        isUnPaused
+        whenNotPaused
         isNotZero(amount)
         isApproved(msg.sender, amount)
     {
@@ -110,7 +102,7 @@ contract StakingVault is Ownable {
      */
     function increaseLock(uint256 amount, uint256 period)
         external
-        isUnPaused
+        whenNotPaused
         isLocked
         isNotZero(amount)
         isApproved(msg.sender, amount)
@@ -135,7 +127,7 @@ contract StakingVault is Ownable {
      * @dev unlock locked tokens with rewards.
      * @param amount amount for unlock.
      */
-    function unLock(uint256 amount) external isUnPaused isLocked isNotZero(amount) {
+    function unLock(uint256 amount) external whenNotPaused isLocked isNotZero(amount) {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
         require(
             block.timestamp - LockInfo.startTime >= 7 days + LockInfo.period,
@@ -162,7 +154,7 @@ contract StakingVault is Ownable {
      * @param user user's address
      * @return reward
      */
-    function getClaimableRewards(address user) public view isUnPaused returns (uint256 reward) {
+    function getClaimableRewards(address user) public view whenNotPaused returns (uint256 reward) {
         reward = _earned(user) + lockInfoList[user].reward;
     }
 
@@ -170,7 +162,7 @@ contract StakingVault is Ownable {
      * @dev claim user's rewards
      * @param user user's address for claim
      */
-    function claimRewards(address user) external isUnPaused {
+    function claimRewards(address user) external whenNotPaused {
         require(user == msg.sender, 'StakingVault: Not permission.');
         _updateReward(msg.sender);
         lockInfo storage LockInfo = lockInfoList[user];
@@ -186,7 +178,7 @@ contract StakingVault is Ownable {
      * @param user user's address for increaselock
      * @param rewards reward for increaselock
      */
-    function compound(address user, uint256 rewards) external isUnPaused isLocked {
+    function compound(address user, uint256 rewards) external whenNotPaused isLocked {
         require(user == msg.sender, 'StakingVault: Not permission.');
         lockInfo storage LockInfo = lockInfoList[user];
         require(
@@ -234,10 +226,13 @@ contract StakingVault is Ownable {
 
     /**
      * @dev pause function
-     * @param status (pause or unPause) => true or false
      */
-    function setPause(bool status) external onlyOwner {
-        paused = status;
+    function setPause(bool pause) external onlyOwner {
+        if (pause == true) {
+            _pause();
+        } else {
+            _unpause();
+        }
     }
 
     /**

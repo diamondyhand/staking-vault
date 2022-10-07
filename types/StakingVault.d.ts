@@ -186,14 +186,22 @@ interface StakingVaultInterface extends ethers.utils.Interface {
 
   events: {
     "OwnershipTransferred(address,address)": EventFragment;
+    "Paused(address)": EventFragment;
+    "Unpaused(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
 >;
+
+export type PausedEvent = TypedEvent<[string] & { account: string }>;
+
+export type UnpausedEvent = TypedEvent<[string] & { account: string }>;
 
 export class StakingVault extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -317,7 +325,7 @@ export class StakingVault extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setPause(
-      status: boolean,
+      pause: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -421,7 +429,7 @@ export class StakingVault extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setPause(
-    status: boolean,
+    pause: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -519,7 +527,7 @@ export class StakingVault extends BaseContract {
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    setPause(status: boolean, overrides?: CallOverrides): Promise<void>;
+    setPause(pause: boolean, overrides?: CallOverrides): Promise<void>;
 
     setRewardDistributor(
       _distributor: string,
@@ -556,6 +564,18 @@ export class StakingVault extends BaseContract {
       [string, string],
       { previousOwner: string; newOwner: string }
     >;
+
+    "Paused(address)"(
+      account?: null
+    ): TypedEventFilter<[string], { account: string }>;
+
+    Paused(account?: null): TypedEventFilter<[string], { account: string }>;
+
+    "Unpaused(address)"(
+      account?: null
+    ): TypedEventFilter<[string], { account: string }>;
+
+    Unpaused(account?: null): TypedEventFilter<[string], { account: string }>;
   };
 
   estimateGas: {
@@ -616,7 +636,7 @@ export class StakingVault extends BaseContract {
     ): Promise<BigNumber>;
 
     setPause(
-      status: boolean,
+      pause: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -707,7 +727,7 @@ export class StakingVault extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setPause(
-      status: boolean,
+      pause: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

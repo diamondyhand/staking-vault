@@ -95,7 +95,8 @@ describe("StakingVault Contract Test.", () => {
     it("pause, setRewardDistributor, notifyRewardAmount lockfor.", async () => {
       // pause function
       await StakingVault.setPause(true);
-      await expect(StakingVault.connect(Tom).lock(0, 30 * dayTime)).to.be.revertedWith("Contract paused.");
+      await StakingVault.setRewardDistributor(Jerry.address);
+      await expect(StakingVault.connect(Tom).lock(0, 30 * dayTime)).to.be.revertedWith("Pausable: paused");
       await StakingVault.setPause(false);
       // setRewardDistributor
       await StakingVault.setRewardDistributor(Jerry.address);
