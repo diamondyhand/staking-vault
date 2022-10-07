@@ -282,9 +282,13 @@ contract StakingVault is Ownable, Pausable {
         reward /= 1e18;
     }
 
-    function _updateReward(address _user) internal {
-        lockInfo storage LockInfo = lockInfoList[_user];
-        uint256 addReward = _earned(_user);
+    /**
+     * @dev users can update user's rewards via this function.
+     * @param user user's address
+     */
+    function _updateReward(address user) internal {
+        lockInfo storage LockInfo = lockInfoList[user];
+        uint256 addReward = _earned(user);
         if (addReward > 0) {
             LockInfo.reward += addReward;
             totalRewards += addReward;
@@ -292,6 +296,9 @@ contract StakingVault is Ownable, Pausable {
         }
     }
 
+    /**
+     * @dev users can get formula's rewards_per_token_for_one_second via this function.
+     */
     function _getRewardPerTokenForOneSecond() internal view returns (uint256 secondReward) {
         secondReward =
             ((totalRewards * 1e18) / (totalLockedAmount == 0 ? 1 : totalLockedAmount)) /
