@@ -41,7 +41,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "totalLockedAmount()": FunctionFragment;
     "totalRewards()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "unlock(uint256)": FunctionFragment;
+    "unLock(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -116,7 +116,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "unlock",
+    functionFragment: "unLock",
     values: [BigNumberish]
   ): string;
 
@@ -182,7 +182,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unlock", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unLock", data: BytesLike): Result;
 
   events: {
     "OwnershipTransferred(address,address)": EventFragment;
@@ -337,7 +337,7 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    unlock(
+    unLock(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -441,7 +441,7 @@ export class StakingVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  unlock(
+  unLock(
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -537,7 +537,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    unlock(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    unLock(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -636,7 +636,7 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    unlock(
+    unLock(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -727,7 +727,7 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    unlock(
+    unLock(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

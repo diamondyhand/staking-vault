@@ -4,6 +4,8 @@ import 'hardhat/console.sol';
 import './interfaces/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
+// import '@openzeppelin/contracts/security/Pausable.sol';
+
 /**
  * @dev Staking Vault Contract
  */
@@ -57,36 +59,6 @@ contract StakingVault is Ownable {
         _;
     }
 
-    modifier isUnLocked() {
-        require(
-            lockInfoList[msg.sender].lockStatus == false,
-            'StakingVault: You have already locked it.'
-        );
-        _;
-    }
-
-    modifier isPeriod(uint256 period) {
-        require(
-            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
-            'StakingVault: period error.'
-        );
-        _;
-    }
-
-    modifier isUser(address user) {
-        require(user == msg.sender, 'StakingVault: Not permission.');
-        _;
-    }
-
-    modifier isNotExpired() {
-        lockInfo storage LockInfo = lockInfoList[msg.sender];
-        require(
-            block.timestamp <= LockInfo.startTime + LockInfo.period,
-            "StakingVault: Lock's deadline has expired."
-        );
-        _;
-    }
-
     modifier isApproved(address user, uint256 amount) {
         require(
             stakingToken.allowance(user, address(this)) >= amount,
@@ -106,7 +78,6 @@ contract StakingVault is Ownable {
     }
 
     /// user side functions
-
     /**
      * @dev create lock with amount and period.
      * Note: maximum period is 4 years, minimum period is one month.
@@ -116,13 +87,19 @@ contract StakingVault is Ownable {
     function lock(uint256 amount, uint256 period)
         external
         isUnPaused
-        isUnLocked
         isNotZero(amount)
-        isPeriod(period)
         isApproved(msg.sender, amount)
     {
-        totalLockedAmount += amount;
+        require(
+            lockInfoList[msg.sender].lockStatus == false,
+            'StakingVault: You have already locked it.'
+        );
+        require(
+            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
+            'StakingVault: period error.'
+        );
         _lock(msg.sender, amount, period);
+        totalLockedAmount += amount;
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
@@ -135,7 +112,6 @@ contract StakingVault is Ownable {
         external
         isUnPaused
         isLocked
-        isNotExpired
         isNotZero(amount)
         isApproved(msg.sender, amount)
     {
@@ -143,6 +119,10 @@ contract StakingVault is Ownable {
         require(
             period + LockInfo.period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: increase period error.'
+        );
+        require(
+            block.timestamp <= LockInfo.startTime + LockInfo.period,
+            "StakingVault: Lock's deadline has expired."
         );
         _updateReward(msg.sender);
         LockInfo.period += period;
@@ -190,9 +170,10 @@ contract StakingVault is Ownable {
      * @dev claim user's rewards
      * @param user user's address for claim
      */
-    function claimRewards(address user) external isUnPaused isUser(user) {
-        lockInfo storage LockInfo = lockInfoList[user];
+    function claimRewards(address user) external isUnPaused {
+        require(user == msg.sender, 'StakingVault: Not permission.');
         _updateReward(msg.sender);
+        lockInfo storage LockInfo = lockInfoList[user];
         uint256 reward = LockInfo.reward;
         if (reward > 0) {
             LockInfo.reward = 0;
@@ -205,14 +186,13 @@ contract StakingVault is Ownable {
      * @param user user's address for increaselock
      * @param rewards reward for increaselock
      */
-    function compound(address user, uint256 rewards)
-        external
-        isUnPaused
-        isLocked
-        isNotExpired
-        isUser(user)
-    {
+    function compound(address user, uint256 rewards) external isUnPaused isLocked {
+        require(user == msg.sender, 'StakingVault: Not permission.');
         lockInfo storage LockInfo = lockInfoList[user];
+        require(
+            block.timestamp <= LockInfo.startTime + LockInfo.period,
+            "StakingVault: Lock's deadline has expired."
+        );
         _updateReward(msg.sender);
         require(rewards <= LockInfo.reward, 'StakingVault: Not Enough compound rewards.');
         LockInfo.amount += rewards;
@@ -232,7 +212,15 @@ contract StakingVault is Ownable {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner isUnLocked isNotZero(amount) isPeriod(period) isApproved(user, amount) {
+    ) external onlyOwner isNotZero(amount) isApproved(user, amount) {
+        require(
+            lockInfoList[user].lockStatus == false,
+            'StakingVault: You have already locked it.'
+        );
+        require(
+            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
+            'StakingVault: period error.'
+        );
         _lock(user, amount, period);
     }
 
@@ -307,7 +295,6 @@ contract StakingVault is Ownable {
             totalRewards += addReward;
             LockInfo.updateTime = block.timestamp;
         }
-        _;
     }
 
     function _getRewardPerTokenForOneSecond() internal view returns (uint256 secondReward) {
