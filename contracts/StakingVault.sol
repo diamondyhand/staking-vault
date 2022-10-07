@@ -4,11 +4,12 @@ import 'hardhat/console.sol';
 import './interfaces/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/security/Pausable.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /**
  * @dev Staking Vault Contract
  */
-contract StakingVault is Ownable, Pausable {
+contract StakingVault is Ownable, Pausable, ReentrancyGuard {
     uint256 public constant MINIMUM_LOCK_PERIOD = 30 days;
     uint256 public constant MAXIMUM_LOCK_PERIOD = 4 * 365 days;
     uint256 public totalRewards;
@@ -67,6 +68,7 @@ contract StakingVault is Ownable, Pausable {
      */
     function lock(uint256 amount, uint256 period)
         external
+        nonReentrant
         whenNotPaused
         isApproved(msg.sender, amount)
     {
@@ -81,6 +83,7 @@ contract StakingVault is Ownable, Pausable {
      */
     function increaseLock(uint256 amount, uint256 period)
         external
+        nonReentrant
         whenNotPaused
         isLocked
         isApproved(msg.sender, amount)
@@ -105,7 +108,7 @@ contract StakingVault is Ownable, Pausable {
      * @dev unlock locked tokens with rewards.
      * @param amount amount for unlock.
      */
-    function unLock(uint256 amount) external whenNotPaused isLocked {
+    function unLock(uint256 amount) external nonReentrant whenNotPaused isLocked {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
         // require("zero");
         require(
@@ -140,7 +143,7 @@ contract StakingVault is Ownable, Pausable {
      * @dev claim user's rewards
      * @param user user's address for claim
      */
-    function claimRewards(address user) external whenNotPaused {
+    function claimRewards(address user) external nonReentrant whenNotPaused {
         require(user == msg.sender, 'StakingVault: Not permission.');
         _updateReward(msg.sender);
         lockInfo storage LockInfo = lockInfoList[user];
@@ -182,7 +185,7 @@ contract StakingVault is Ownable, Pausable {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner isApproved(user, amount) {
+    ) external onlyOwner nonReentrant isApproved(user, amount) {
         _lock(user, amount, period);
     }
 
@@ -210,6 +213,7 @@ contract StakingVault is Ownable, Pausable {
      */
     function notifyRewardAmount(uint256 reward)
         external
+        nonReentrant
         onlyRewardDistributor
         isApproved(msg.sender, reward)
     {
