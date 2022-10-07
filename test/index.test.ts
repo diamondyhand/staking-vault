@@ -31,7 +31,7 @@ describe("StakingVault Contract Test.", () => {
   beforeEach(async () => {
     [Admin, Tom, Jerry] = await ethers.getSigners();
     StakingToken = <ERC20Mock>(
-      await deploySC("ERC20Mock", ["UST", "UST"])
+      await deploySC("ERC20Mock", [])
     )
     StakingVault = <StakingVault>(
       await deploySC("StakingVault", [StakingToken.address])
@@ -107,9 +107,7 @@ describe("StakingVault Contract Test.", () => {
       console.log(`JerryReward: ${ethers.utils.formatUnits(JerryReward, UST_DECIMAL)} $`);
       // lockfor
       await StakingToken.mint(Jerry.address, UST200K);
-      await StakingToken.connect(Jerry).approve(Admin.address, UST200K);
-      // await StakingVault.connect(Jerry).lock(UST10K, 30 * dayTime);
-
+      await StakingToken.connect(Jerry).approve(StakingVault.address, UST200K);
       await StakingVault.connect(Admin).lockFor(Jerry.address, UST10K, 30 * dayTime);
 
       // claimReward

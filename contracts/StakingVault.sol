@@ -5,7 +5,6 @@ import './interfaces/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
 /**
- * @author materdevv278
  * @dev Staking Vault Contract
  */
 contract StakingVault is Ownable {
@@ -50,12 +49,15 @@ contract StakingVault is Ownable {
         _;
     }
 
-    modifier isLocked(address user) {
-        require(lockInfoList[user].lockStatus == true, 'StakingVault: You must be create lock.');
+    modifier isLocked() {
+        require(
+            lockInfoList[msg.sender].lockStatus == true,
+            'StakingVault: You must be create lock.'
+        );
         _;
     }
 
-    modifier isUnLocked(address user) {
+    modifier isUnLocked() {
         require(
             lockInfoList[msg.sender].lockStatus == false,
             'StakingVault: You have already locked it.'
@@ -65,7 +67,7 @@ contract StakingVault is Ownable {
 
     modifier isPeriod(uint256 period) {
         require(
-            period >= MINIMUM_LOCK_PERIOD && period <= MAXIMUM_LOCK_PERIOD,
+            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: period error.'
         );
         _;
@@ -85,9 +87,9 @@ contract StakingVault is Ownable {
         _;
     }
 
-    modifier isApproved(uint256 amount) {
+    modifier isApproved(address user, uint256 amount) {
         require(
-            stakingToken.allowance(msg.sender, address(this)) >= amount,
+            stakingToken.allowance(user, address(this)) >= amount,
             'StakingVault: You must be approve.'
         );
         _;
@@ -102,7 +104,6 @@ contract StakingVault is Ownable {
         lockInfo storage LockInfo = lockInfoList[_user];
         uint256 addReward = earned(_user);
         if (addReward > 0) {
-            LockInfo.sigmaX = 0;
             LockInfo.reward += addReward;
             total_rewards += addReward;
             LockInfo.updateTime = block.timestamp;
@@ -126,10 +127,10 @@ contract StakingVault is Ownable {
     function lock(uint256 amount, uint256 period)
         external
         isUnPaused
-        isUnLocked(msg.sender)
+        isUnLocked
         isNotZero(amount)
         isPeriod(period)
-        isApproved(amount)
+        isApproved(msg.sender, amount)
     {
         total_locked_amount += amount;
         _lock(msg.sender, amount, period);
@@ -144,10 +145,10 @@ contract StakingVault is Ownable {
     function increaselock(uint256 amount, uint256 period)
         external
         isUnPaused
-        isLocked(msg.sender)
-        isApproved(amount)
-        isNotZero(amount)
+        isLocked
         isNotExpired
+        isNotZero(amount)
+        isApproved(msg.sender, amount)
         updateReward(msg.sender)
     {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
@@ -168,7 +169,7 @@ contract StakingVault is Ownable {
     function unlock(uint256 amount)
         external
         isUnPaused
-        isLocked(msg.sender)
+        isLocked
         isNotZero(amount)
         updateReward(msg.sender)
     {
@@ -222,9 +223,9 @@ contract StakingVault is Ownable {
     function compound(address user, uint256 rewards)
         external
         isUnPaused
+        isLocked
         isNotExpired
         isUser(user)
-        isLocked(msg.sender)
         updateReward(user)
     {
         lockInfo storage LockInfo = lockInfoList[user];
@@ -252,7 +253,7 @@ contract StakingVault is Ownable {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner isUnLocked(user) {
+    ) external onlyOwner isUnLocked isNotZero(amount) isPeriod(period) isApproved(user, amount) {
         _lock(user, amount, period);
     }
 
@@ -275,7 +276,12 @@ contract StakingVault is Ownable {
     /**
      * @dev RewardDistributor function
      */
-    function notifyRewardAmount(uint256 reward) external onlyRewardDistributor isApproved(reward) {
+    function notifyRewardAmount(uint256 reward)
+        external
+        onlyRewardDistributor
+        isNotZero(reward)
+        isApproved(msg.sender, reward)
+    {
         stakingToken.transferFrom(msg.sender, address(this), reward);
         total_rewards += reward;
     }
