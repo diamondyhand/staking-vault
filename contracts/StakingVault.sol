@@ -70,7 +70,6 @@ contract StakingVault is Ownable, Pausable {
         whenNotPaused
         isApproved(msg.sender, amount)
     {
-        require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         _lock(msg.sender, amount, period);
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
@@ -184,7 +183,6 @@ contract StakingVault is Ownable, Pausable {
         uint256 amount,
         uint256 period
     ) external onlyOwner isApproved(user, amount) {
-        require(lockInfoList[user].amount == 0, 'StakingVault: You have already locked it.');
         _lock(user, amount, period);
     }
 
@@ -231,6 +229,7 @@ contract StakingVault is Ownable, Pausable {
         uint256 period
     ) internal {
         require(amount > 0, 'StakingVault: amount zero.');
+        require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         require(
             MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: period error.'
