@@ -25,12 +25,8 @@ contract StakingVault is Ownable, Pausable {
         uint256 startTime;
         // update time by increaselock
         uint256 updateTime;
-        // Σ user_locked_amount * locked_period_in_seconds created when increaseLock.
-        uint256 sigmaX;
         // realReward * 1e18
         uint256 reward;
-        // lock or unlock: true: false;
-        bool lockStatus;
     }
 
     // user's address => user's lockInfo
@@ -45,10 +41,7 @@ contract StakingVault is Ownable, Pausable {
     }
 
     modifier isLocked() {
-        require(
-            lockInfoList[msg.sender].lockStatus == true,
-            'StakingVault: You must be create lock.'
-        );
+        require(lockInfoList[msg.sender].amount > 0, 'StakingVault: You must be create lock.');
         _;
     }
 
@@ -77,11 +70,7 @@ contract StakingVault is Ownable, Pausable {
         whenNotPaused
         isApproved(msg.sender, amount)
     {
-        require(
-            lockInfoList[msg.sender].lockStatus == false,
-            'StakingVault: You have already locked it.'
-        );
-
+        require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         _lock(msg.sender, amount, period);
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
@@ -121,7 +110,7 @@ contract StakingVault is Ownable, Pausable {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
         // require("zero");
         require(
-            block.timestamp - LockInfo.startTime >= 7 days + LockInfo.period,
+            block.timestamp - LockInfo.startTime >= LockInfo.period,
             'StakingVault: You can unlock after lock period.'
         );
         require(amount <= LockInfo.amount, 'StakingVault: unlock amount error.');
@@ -134,7 +123,6 @@ contract StakingVault is Ownable, Pausable {
         if (LockInfo.amount == 0) {
             LockInfo.startTime = 0;
             LockInfo.updateTime = 0;
-            LockInfo.lockStatus = false;
             LockInfo.period = 0;
         }
         stakingToken.transfer(msg.sender, amount + reward);
@@ -196,10 +184,7 @@ contract StakingVault is Ownable, Pausable {
         uint256 amount,
         uint256 period
     ) external onlyOwner isApproved(user, amount) {
-        require(
-            lockInfoList[user].lockStatus == false,
-            'StakingVault: You have already locked it.'
-        );
+        require(lockInfoList[user].amount == 0, 'StakingVault: You have already locked it.');
         _lock(user, amount, period);
     }
 
@@ -245,6 +230,7 @@ contract StakingVault is Ownable, Pausable {
         uint256 amount,
         uint256 period
     ) internal {
+        require(amount > 0, 'StakingVault: amount zero.');
         require(
             MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: period error.'
@@ -254,7 +240,6 @@ contract StakingVault is Ownable, Pausable {
         LockInfo.period = period;
         LockInfo.startTime = block.timestamp;
         LockInfo.updateTime = block.timestamp;
-        LockInfo.lockStatus = true;
         totalLockedAmount += amount;
     }
 
