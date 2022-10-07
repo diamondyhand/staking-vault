@@ -29,37 +29,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
-      name: "Greeter",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Greeter__factory>;
-    getContractFactory(
       name: "IERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
-    getContractFactory(
-      name: "IERC3156FlashBorrower",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC3156FlashBorrower__factory>;
-    getContractFactory(
-      name: "IERC3156FlashLender",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC3156FlashLender__factory>;
     getContractFactory(
       name: "ERC20Mock",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20Mock__factory>;
     getContractFactory(
-      name: "FlashBorrowerMock",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FlashBorrowerMock__factory>;
-    getContractFactory(
       name: "StakingVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.StakingVault__factory>;
-    getContractFactory(
-      name: "Vault",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Vault__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -82,45 +62,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
     getContractAt(
-      name: "Greeter",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Greeter>;
-    getContractAt(
       name: "IERC20",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
-    getContractAt(
-      name: "IERC3156FlashBorrower",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC3156FlashBorrower>;
-    getContractAt(
-      name: "IERC3156FlashLender",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC3156FlashLender>;
     getContractAt(
       name: "ERC20Mock",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20Mock>;
     getContractAt(
-      name: "FlashBorrowerMock",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.FlashBorrowerMock>;
-    getContractAt(
       name: "StakingVault",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.StakingVault>;
-    getContractAt(
-      name: "Vault",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Vault>;
 
     // default types
     getContractFactory(
