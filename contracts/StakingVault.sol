@@ -40,6 +40,7 @@ contract StakingVault is Ownable, Pausable {
      * @param _stakingToken staking ERC20 Token address.
      */
     constructor(address _stakingToken) {
+        require(_stakingToken == address(0), 'StakingVault: address must not be zero address.');
         stakingToken = IERC20(_stakingToken);
     }
 
@@ -59,11 +60,6 @@ contract StakingVault is Ownable, Pausable {
         _;
     }
 
-    modifier isNotZero(uint256 amount) {
-        require(amount > 0, 'amount is zero.');
-        _;
-    }
-
     modifier onlyRewardDistributor() {
         require(msg.sender == distributor, 'RewardDistributor can only call this function.');
         _;
@@ -79,19 +75,14 @@ contract StakingVault is Ownable, Pausable {
     function lock(uint256 amount, uint256 period)
         external
         whenNotPaused
-        isNotZero(amount)
         isApproved(msg.sender, amount)
     {
         require(
             lockInfoList[msg.sender].lockStatus == false,
             'StakingVault: You have already locked it.'
         );
-        require(
-            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
-            'StakingVault: period error.'
-        );
+
         _lock(msg.sender, amount, period);
-        totalLockedAmount += amount;
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
@@ -104,7 +95,6 @@ contract StakingVault is Ownable, Pausable {
         external
         whenNotPaused
         isLocked
-        isNotZero(amount)
         isApproved(msg.sender, amount)
     {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
@@ -127,8 +117,9 @@ contract StakingVault is Ownable, Pausable {
      * @dev unlock locked tokens with rewards.
      * @param amount amount for unlock.
      */
-    function unLock(uint256 amount) external whenNotPaused isLocked isNotZero(amount) {
+    function unLock(uint256 amount) external whenNotPaused isLocked {
         lockInfo storage LockInfo = lockInfoList[msg.sender];
+        // require("zero");
         require(
             block.timestamp - LockInfo.startTime >= 7 days + LockInfo.period,
             'StakingVault: You can unlock after lock period.'
@@ -204,14 +195,10 @@ contract StakingVault is Ownable, Pausable {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner isNotZero(amount) isApproved(user, amount) {
+    ) external onlyOwner isApproved(user, amount) {
         require(
             lockInfoList[user].lockStatus == false,
             'StakingVault: You have already locked it.'
-        );
-        require(
-            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
-            'StakingVault: period error.'
         );
         _lock(user, amount, period);
     }
@@ -241,7 +228,6 @@ contract StakingVault is Ownable, Pausable {
     function notifyRewardAmount(uint256 reward)
         external
         onlyRewardDistributor
-        isNotZero(reward)
         isApproved(msg.sender, reward)
     {
         stakingToken.transferFrom(msg.sender, address(this), reward);
@@ -259,12 +245,17 @@ contract StakingVault is Ownable, Pausable {
         uint256 amount,
         uint256 period
     ) internal {
+        require(
+            MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
+            'StakingVault: period error.'
+        );
         lockInfo storage LockInfo = lockInfoList[user];
         LockInfo.amount = amount;
         LockInfo.period = period;
         LockInfo.startTime = block.timestamp;
         LockInfo.updateTime = block.timestamp;
         LockInfo.lockStatus = true;
+        totalLockedAmount += amount;
     }
 
     /**
