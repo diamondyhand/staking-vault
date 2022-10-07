@@ -1,11 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
-import { deploySC, toWei, fromWei } from "./helper";
+import { deploySC, toWei } from "./helper";
 import { StakingVault, ERC20Mock } from '../types'
 import {
-  MAX_DECIMAL,
   UST_DECIMAL,
 } from "./constants";
 
@@ -23,13 +21,9 @@ describe("StakingVault Contract Test.", () => {
   const dayTime = 24 * 3600;
   const UST100 = toWei(100, UST_DECIMAL);
   const UST200 = toWei(200, UST_DECIMAL);
-  const UST400 = toWei(400, UST_DECIMAL);
-  const UST500 = toWei(500, UST_DECIMAL);
   const UST1K = toWei(1000, UST_DECIMAL);
   const UST5K = toWei(5000, UST_DECIMAL);
   const UST10K = toWei(10000, UST_DECIMAL);
-  const UST20K = toWei(20000, UST_DECIMAL);
-  const UST50K = toWei(50000, UST_DECIMAL);
   const UST100K = toWei(100000, UST_DECIMAL);
   const UST200K = toWei(200000, UST_DECIMAL);
   const UST300K = toWei(300000, UST_DECIMAL);
