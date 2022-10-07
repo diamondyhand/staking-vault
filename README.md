@@ -17,7 +17,7 @@ user_rewards = (user_locked_amount * rewards_per_token_for_one_second) * (locked
 - rewards_per_token_for_one_second will be updated using the below formula.
 
 ```
-rewards_per_token_for_one_second = (total_rewards / total_locked_amount) / 4_years_in_seconds
+rewards_per_token_for_one_second = (totalRewards / totalLockedAmount) / 4_years_in_seconds
 ```
 
 ### Other Features
