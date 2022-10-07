@@ -17,7 +17,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
 
     address public distributor;
     IERC20 public stakingToken;
-    struct lockInfo {
+    struct LockInfo {
         // locked amount
         uint256 amount;
         // lock period
@@ -30,14 +30,14 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 reward;
     }
 
-    // user's address => user's lockInfo
-    mapping(address => lockInfo) public lockInfoList;
+    // user's address => user's LockInfo
+    mapping(address => LockInfo) public lockInfoList;
 
     /**
      * @param _stakingToken staking ERC20 Token address.
      */
     constructor(address _stakingToken) {
-        require(_stakingToken == address(0), 'StakingVault: address must not be zero address.');
+        require(_stakingToken != address(0), 'StakingVault: address must not be zero address.');
         stakingToken = IERC20(_stakingToken);
     }
 
@@ -88,18 +88,18 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         isLocked
         isApproved(msg.sender, amount)
     {
-        lockInfo storage LockInfo = lockInfoList[msg.sender];
+        LockInfo storage lockInfo = lockInfoList[msg.sender];
         require(
-            period + LockInfo.period <= MAXIMUM_LOCK_PERIOD,
+            period + lockInfo.period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: increase period error.'
         );
         require(
-            block.timestamp <= LockInfo.startTime + LockInfo.period,
+            block.timestamp <= lockInfo.startTime + lockInfo.period,
             "StakingVault: Lock's deadline has expired."
         );
         _updateReward(msg.sender);
-        LockInfo.period += period;
-        LockInfo.amount += amount;
+        lockInfo.period += period;
+        lockInfo.amount += amount;
         totalLockedAmount += amount;
         stakingToken.transferFrom(msg.sender, address(this), amount);
     }
@@ -109,23 +109,23 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @param amount amount for unlock.
      */
     function unLock(uint256 amount) external nonReentrant whenNotPaused isLocked {
-        lockInfo storage LockInfo = lockInfoList[msg.sender];
+        LockInfo storage lockInfo = lockInfoList[msg.sender];
         // require("zero");
         require(
-            block.timestamp - LockInfo.startTime >= LockInfo.period,
+            block.timestamp - lockInfo.startTime >= lockInfo.period,
             'StakingVault: You can unlock after lock period.'
         );
-        require(amount <= LockInfo.amount, 'StakingVault: unlock amount error.');
+        require(amount <= lockInfo.amount, 'StakingVault: unlock amount error.');
         _updateReward(msg.sender);
-        uint256 reward = LockInfo.reward;
+        uint256 reward = lockInfo.reward;
         totalRewards -= reward;
         totalLockedAmount -= amount;
-        LockInfo.reward = 0;
-        LockInfo.amount -= amount;
-        if (LockInfo.amount == 0) {
-            LockInfo.startTime = 0;
-            LockInfo.updateTime = 0;
-            LockInfo.period = 0;
+        lockInfo.reward = 0;
+        lockInfo.amount -= amount;
+        if (lockInfo.amount == 0) {
+            lockInfo.startTime = 0;
+            lockInfo.updateTime = 0;
+            lockInfo.period = 0;
         }
         stakingToken.transfer(msg.sender, amount + reward);
     }
@@ -146,10 +146,10 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
     function claimRewards(address user) external nonReentrant whenNotPaused {
         require(user == msg.sender, 'StakingVault: Not permission.');
         _updateReward(msg.sender);
-        lockInfo storage LockInfo = lockInfoList[user];
-        uint256 reward = LockInfo.reward;
+        LockInfo storage lockInfo = lockInfoList[user];
+        uint256 reward = lockInfo.reward;
         if (reward > 0) {
-            LockInfo.reward = 0;
+            lockInfo.reward = 0;
             stakingToken.transfer(user, reward);
         }
     }
@@ -161,17 +161,17 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      */
     function compound(address user, uint256 rewards) external whenNotPaused isLocked {
         require(user == msg.sender, 'StakingVault: Not permission.');
-        lockInfo storage LockInfo = lockInfoList[user];
+        LockInfo storage lockInfo = lockInfoList[user];
         require(
-            block.timestamp <= LockInfo.startTime + LockInfo.period,
+            block.timestamp <= lockInfo.startTime + lockInfo.period,
             "StakingVault: Lock's deadline has expired."
         );
         _updateReward(msg.sender);
-        require(rewards <= LockInfo.reward, 'StakingVault: Not Enough compound rewards.');
-        LockInfo.amount += rewards;
+        require(rewards <= lockInfo.reward, 'StakingVault: Not Enough compound rewards.');
+        lockInfo.amount += rewards;
         totalLockedAmount += rewards;
         totalRewards -= rewards;
-        LockInfo.reward -= rewards;
+        lockInfo.reward -= rewards;
     }
 
     /// Admin Functions
@@ -238,11 +238,11 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
             MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
             'StakingVault: period error.'
         );
-        lockInfo storage LockInfo = lockInfoList[user];
-        LockInfo.amount = amount;
-        LockInfo.period = period;
-        LockInfo.startTime = block.timestamp;
-        LockInfo.updateTime = block.timestamp;
+        LockInfo storage lockInfo = lockInfoList[user];
+        lockInfo.amount = amount;
+        lockInfo.period = period;
+        lockInfo.startTime = block.timestamp;
+        lockInfo.updateTime = block.timestamp;
         totalLockedAmount += amount;
     }
 
@@ -252,12 +252,9 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @return reward
      */
     function _earned(address user) internal view returns (uint256 reward) {
-        lockInfo storage LockInfo = lockInfoList[user];
-        uint256 period = block.timestamp - LockInfo.updateTime;
-        if (block.timestamp > LockInfo.startTime + LockInfo.period) {
-            period = LockInfo.startTime + LockInfo.period - LockInfo.updateTime;
-        }
-        reward = (period * LockInfo.amount) * _getRewardPerTokenForOneSecond();
+        LockInfo storage lockInfo = lockInfoList[user];
+        uint256 period = block.timestamp - lockInfo.updateTime;
+        reward = (period * lockInfo.amount) * _getRewardPerTokenForOneSecond();
         reward /= 1e18;
     }
 
@@ -266,12 +263,12 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @param user user's address
      */
     function _updateReward(address user) internal {
-        lockInfo storage LockInfo = lockInfoList[user];
+        LockInfo storage lockInfo = lockInfoList[user];
         uint256 addReward = _earned(user);
         if (addReward > 0) {
-            LockInfo.reward += addReward;
+            lockInfo.reward += addReward;
             totalRewards += addReward;
-            LockInfo.updateTime = block.timestamp;
+            lockInfo.updateTime = block.timestamp;
         }
     }
 
