@@ -40,9 +40,9 @@ describe("StakingVault Contract Test.", () => {
   });
 
   describe("Test Start.", () => {
-    it("lock increaselock unlock", async () => {
+    it("lock increaseLock unLock", async () => {
       await StakingToken.mint(Tom.address, UST300K);
-      await expect(StakingVault.connect(Tom).unlock(UST1K)).to.be.revertedWith("StakingVault: You must be create lock.");
+      await expect(StakingVault.connect(Tom).unLock(UST1K)).to.be.revertedWith("StakingVault: You must be create lock.");
       // lock expect
       await expect(StakingVault.connect(Tom).lock(0, 30 * dayTime)).to.be.revertedWith("amount is zero.");
       await expect(StakingVault.connect(Tom).lock(UST100, 30 * dayTime)).to.be.revertedWith("StakingVault: You must be approve.");
@@ -50,27 +50,27 @@ describe("StakingVault Contract Test.", () => {
 
       await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
       // increase Lock expect
-      await expect(StakingVault.connect(Tom).increaselock(UST1K, 60 * dayTime)).to.be.revertedWith("StakingVault: You must be create lock.");
+      await expect(StakingVault.connect(Tom).increaseLock(UST1K, 60 * dayTime)).to.be.revertedWith("StakingVault: You must be create lock.");
       await StakingVault.connect(Tom).lock(UST100, 30 * dayTime);
       await StakingVault.connect(Tom).claimRewards(Tom.address);
 
       await expect(StakingVault.connect(Tom).lock(UST100, 60 * dayTime)).to.be.revertedWith("StakingVault: You have already locked it.");
       // increase lock
-      await StakingVault.connect(Tom).increaselock(UST100, 30 * dayTime);
-      await StakingVault.connect(Tom).increaselock(UST100, 30 * dayTime);
-      await StakingVault.connect(Tom).increaselock(UST100, 30 * dayTime);
+      await StakingVault.connect(Tom).increaseLock(UST100, 30 * dayTime);
+      await StakingVault.connect(Tom).increaseLock(UST100, 30 * dayTime);
+      await StakingVault.connect(Tom).increaseLock(UST100, 30 * dayTime);
       // increase Lock expect
-      await expect(StakingVault.connect(Tom).increaselock(UST100, 3000 * dayTime)).to.be.revertedWith("StakingVault: increase period error.");
+      await expect(StakingVault.connect(Tom).increaseLock(UST100, 3000 * dayTime)).to.be.revertedWith("StakingVault: increase period error.");
 
       await timeTravel(67 * dayTime);
-      await expect(StakingVault.connect(Tom).unlock(UST100)).to.be.revertedWith("StakingVault: You can unlock after lock period.");
+      await expect(StakingVault.connect(Tom).unLock(UST100)).to.be.revertedWith("StakingVault: You can unLock after lock period.");
       await timeTravel(160 * dayTime);
-      await expect(StakingVault.connect(Tom).increaselock(UST100, 20 * dayTime)).to.be.revertedWith("StakingVault: Lock's deadline has expired.");
-      await expect(StakingVault.connect(Tom).unlock(UST10K)).to.be.revertedWith("StakingVault: unlock amount error.");
-      // unlock
-      await StakingVault.connect(Tom).unlock(UST200);
-      await StakingVault.connect(Tom).unlock(UST200);
-      // increaselock (Because locks deadline has expired, Period must be minimum one month.)
+      await expect(StakingVault.connect(Tom).increaseLock(UST100, 20 * dayTime)).to.be.revertedWith("StakingVault: Lock's deadline has expired.");
+      await expect(StakingVault.connect(Tom).unLock(UST10K)).to.be.revertedWith("StakingVault: unLock amount error.");
+      // unLock
+      await StakingVault.connect(Tom).unLock(UST200);
+      await StakingVault.connect(Tom).unLock(UST200);
+      // increaseLock (Because locks deadline has expired, Period must be minimum one month.)
       await StakingToken.connect(Tom).approve(StakingVault.address, UST300K);
       // setRewardDistributor
       await StakingVault.setRewardDistributor(Tom.address);
@@ -78,8 +78,8 @@ describe("StakingVault Contract Test.", () => {
       await StakingVault.connect(Tom).notifyRewardAmount(UST200K);
       await expect(StakingVault.connect(Jerry).notifyRewardAmount(UST200K)).to.be.revertedWith("RewardDistributor can only call this function.");
       await StakingVault.connect(Tom).lock(UST10K, 30 * dayTime);
-      await StakingVault.connect(Tom).increaselock(UST5K, 30 * dayTime);
-      await StakingVault.connect(Tom).increaselock(UST10K, 30 * dayTime);
+      await StakingVault.connect(Tom).increaseLock(UST5K, 30 * dayTime);
+      await StakingVault.connect(Tom).increaseLock(UST10K, 30 * dayTime);
       await timeTravel(37 * dayTime);
 
       console.log("Tom's amount is ", await StakingToken.balanceOf(Tom.address));
@@ -99,8 +99,8 @@ describe("StakingVault Contract Test.", () => {
       // notifyRewardAmount
       await StakingVault.connect(Jerry).notifyRewardAmount(UST200K);
       await StakingVault.connect(Jerry).lock(UST10K, 30 * dayTime);
-      await StakingVault.connect(Jerry).increaselock(UST5K, 10 * dayTime);
-      await StakingVault.connect(Jerry).increaselock(UST5K, 10 * dayTime);
+      await StakingVault.connect(Jerry).increaseLock(UST5K, 10 * dayTime);
+      await StakingVault.connect(Jerry).increaseLock(UST5K, 10 * dayTime);
       await timeTravel(37 * dayTime);
 
       const JerryReward = await StakingVault.getClaimableRewards(Jerry.address);

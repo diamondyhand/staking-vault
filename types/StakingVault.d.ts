@@ -27,7 +27,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "compound(address,uint256)": FunctionFragment;
     "distributor()": FunctionFragment;
     "getClaimableRewards(address)": FunctionFragment;
-    "increaselock(uint256,uint256)": FunctionFragment;
+    "increaseLock(uint256,uint256)": FunctionFragment;
     "lock(uint256,uint256)": FunctionFragment;
     "lockFor(address,uint256,uint256)": FunctionFragment;
     "lockInfoList(address)": FunctionFragment;
@@ -38,8 +38,8 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "setPause(bool)": FunctionFragment;
     "setRewardDistributor(address)": FunctionFragment;
     "stakingToken()": FunctionFragment;
-    "total_locked_amount()": FunctionFragment;
-    "total_rewards()": FunctionFragment;
+    "totalLockedAmount()": FunctionFragment;
+    "totalRewards()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "unlock(uint256)": FunctionFragment;
   };
@@ -69,7 +69,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "increaselock",
+    functionFragment: "increaseLock",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -104,11 +104,11 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "total_locked_amount",
+    functionFragment: "totalLockedAmount",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "total_rewards",
+    functionFragment: "totalRewards",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -142,7 +142,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "increaselock",
+    functionFragment: "increaseLock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
@@ -171,11 +171,11 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "total_locked_amount",
+    functionFragment: "totalLockedAmount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "total_rewards",
+    functionFragment: "totalRewards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -261,7 +261,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { reward: BigNumber }>;
 
-    increaselock(
+    increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -328,9 +328,9 @@ export class StakingVault extends BaseContract {
 
     stakingToken(overrides?: CallOverrides): Promise<[string]>;
 
-    total_locked_amount(overrides?: CallOverrides): Promise<[BigNumber]>;
+    totalLockedAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    total_rewards(overrides?: CallOverrides): Promise<[BigNumber]>;
+    totalRewards(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferOwnership(
       newOwner: string,
@@ -365,7 +365,7 @@ export class StakingVault extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  increaselock(
+  increaseLock(
     amount: BigNumberish,
     period: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -432,9 +432,9 @@ export class StakingVault extends BaseContract {
 
   stakingToken(overrides?: CallOverrides): Promise<string>;
 
-  total_locked_amount(overrides?: CallOverrides): Promise<BigNumber>;
+  totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-  total_rewards(overrides?: CallOverrides): Promise<BigNumber>;
+  totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferOwnership(
     newOwner: string,
@@ -466,7 +466,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    increaselock(
+    increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: CallOverrides
@@ -528,9 +528,9 @@ export class StakingVault extends BaseContract {
 
     stakingToken(overrides?: CallOverrides): Promise<string>;
 
-    total_locked_amount(overrides?: CallOverrides): Promise<BigNumber>;
+    totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    total_rewards(overrides?: CallOverrides): Promise<BigNumber>;
+    totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -581,7 +581,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    increaselock(
+    increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -627,9 +627,9 @@ export class StakingVault extends BaseContract {
 
     stakingToken(overrides?: CallOverrides): Promise<BigNumber>;
 
-    total_locked_amount(overrides?: CallOverrides): Promise<BigNumber>;
+    totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    total_rewards(overrides?: CallOverrides): Promise<BigNumber>;
+    totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -669,7 +669,7 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    increaselock(
+    increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -718,11 +718,9 @@ export class StakingVault extends BaseContract {
 
     stakingToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    total_locked_amount(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    totalLockedAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    total_rewards(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    totalRewards(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: string,
