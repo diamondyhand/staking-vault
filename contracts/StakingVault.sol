@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import 'hardhat/console.sol';
-import './interfaces/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/security/Pausable.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 /**
  * @dev Staking Vault Contract
  */
 contract StakingVault is Ownable, Pausable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
     uint256 public constant MINIMUM_LOCK_PERIOD = 30 days;
     uint256 public constant MAXIMUM_LOCK_PERIOD = 4 * 365 days;
     uint256 public totalRewards;
@@ -26,7 +27,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 startTime;
         // update time by increaselock
         uint256 updateTime;
-        // realReward * 1e18
+        // reward
         uint256 reward;
     }
 
@@ -66,14 +67,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @param amount amount for lock.
      * @param period period for lock.
      */
-    function lock(uint256 amount, uint256 period)
-        external
-        nonReentrant
-        whenNotPaused
-        isApproved(msg.sender, amount)
-    {
+    function lock(uint256 amount, uint256 period) external {
         _lock(msg.sender, amount, period);
-        stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -101,7 +96,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         lockInfo.period += period;
         lockInfo.amount += amount;
         totalLockedAmount += amount;
-        stakingToken.transferFrom(msg.sender, address(this), amount);
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -127,7 +122,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
             lockInfo.updateTime = 0;
             lockInfo.period = 0;
         }
-        stakingToken.transfer(msg.sender, amount + reward);
+        stakingToken.safeTransfer(msg.sender, amount + reward);
     }
 
     /**
@@ -150,7 +145,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 reward = lockInfo.reward;
         if (reward > 0) {
             lockInfo.reward = 0;
-            stakingToken.transfer(user, reward);
+            stakingToken.safeTransfer(user, reward);
         }
     }
 
@@ -185,7 +180,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         address user,
         uint256 amount,
         uint256 period
-    ) external onlyOwner nonReentrant isApproved(user, amount) {
+    ) external onlyOwner {
         _lock(user, amount, period);
     }
 
@@ -213,11 +208,10 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      */
     function notifyRewardAmount(uint256 reward)
         external
-        nonReentrant
         onlyRewardDistributor
         isApproved(msg.sender, reward)
     {
-        stakingToken.transferFrom(msg.sender, address(this), reward);
+        stakingToken.safeTransferFrom(msg.sender, address(this), reward);
         totalRewards += reward;
     }
 
@@ -231,7 +225,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         address user,
         uint256 amount,
         uint256 period
-    ) internal {
+    ) internal nonReentrant whenNotPaused isApproved(user, amount) {
         require(amount > 0, 'StakingVault: amount zero.');
         require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         require(
@@ -244,6 +238,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         lockInfo.startTime = block.timestamp;
         lockInfo.updateTime = block.timestamp;
         totalLockedAmount += amount;
+        stakingToken.safeTransferFrom(user, address(this), amount);
     }
 
     /**
