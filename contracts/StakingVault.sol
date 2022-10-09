@@ -225,8 +225,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         address user,
         uint256 amount,
         uint256 period
-    ) internal nonReentrant whenNotPaused isApproved(user, amount) {
-        require(amount > 0, 'StakingVault: amount zero.');
+    ) internal nonReentrant whenNotPaused .0(user, amount) {
+        require(amount > 0, 'StakingVault: a.mount zero.');
         require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         require(
             MINIMUM_LOCK_PERIOD <= period && period <= MAXIMUM_LOCK_PERIOD,
