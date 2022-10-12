@@ -1,143 +1,104 @@
-# 🚩 Staking Vault
+# Staking Vault
 
-Users will lock ERC20 token into the vault for up to 4 years and earn more as rewards. <br/>
-Staking and reward Tokens are same. <br/>
-Example: If you lock 100 USDT tokens, you will get more USDT tokens as rewwards when unlock. <br/>
+- Users will lock ERC20 token into the vault for up to 4 years and earn more as rewards.
+- Users can create multiple locks.
+- User's lock period should be longer than MIN_LOCK_DAYS (1 month = 30 days) and smaller than MAX_LOCK_DAYS (4 years = 1460 days)
+- Locks can be created only after there're some rewards to distribute on the vault contract.
+- Users can't withdraw before their lock period, but can claim rewards if there're.
 
 ## Main logic
 
 ### Reward Mechanism
 
-- User rewards will be calculated with the below formula.
+User rewards will be calculated based on days of lock.
+
+- rewards_per_token_for_one_day
 
 ```
-user_rewards = (user_locked_amount * rewards_per_token_for_one_second) * (locked_period_in_seconds)
+rewards_per_token_for_one_day = (total_rewards / total_locked_amount) / 4_years_in_days
 ```
 
-- rewards_per_token_for_one_second will be updated using the below formula.
+- user_rewards_per_lock
 
 ```
-rewards_per_token_for_one_second = (totalRewards / totalLockedAmount) / 4_years_in_seconds
+user_rewards_per_lock = (locked_amount * rewards_per_token_for_one_day) * (locked_period_in_days)
 ```
 
-### Other Features
+- User rewards are total sum of user_rewards_per_lock.
 
-- User's lock period should be longer than MINIMUM_LOCK_PERIOD (1 month).
-
-- Users can't withdraw before their lock period.
-
-## Functions Functions
+## Functions
 
 ### User side functions
 
-- lock: create lock with amount and period (max period is 4 years)
+#### lock
 
-```js
-function lock(uint256 amount, uint256 period) external {}
+- create lock with token amounts and lock period (max period is 4 years)
+- return lockId
+
+```
+function lock(uint256 amount, uint256 period) external returns {uint256 lockId}
 ```
 
-- increaselock: increase lock amount or period
+#### increaselock
 
-```js
-function increaseLock(uint256 amount, uint256 period) external {}
+- increase lock amount or period
+
+```
+function increaselock(uint256 lockId, uint256 amount, uint256 period) external {}
 ```
 
-- unlock: unlock locked tokens with rewards (only after minimum lock period of 1 week)
+#### unlock
 
-```js
-function unLock(uint256 amount, uint256 period) external {}
+- unlock locked tokens with rewards (only after minimum lock period of 1 month)
+- if tokenId is 0, then it will unlock all locks.
+
+```
+function unlock(uint256 lockId, uint256 amount, bool withRewards) external {}
 ```
 
-- getClaimableRewards: returns user's claimable rewards
+#### getClaimableRewards
 
-```js
-function getClaimableRewards(address user) external returns (uint256) {}
+- returns user's claimable rewards
+- if lockId is 0, then will calculate total rewards for all locks
+
+```
+function getClaimableRewards(uint256 lockId, address user) external returns (uint256) {}
 ```
 
-- claimRewards: claim user's rewards
+#### claimRewards
 
-```js
+- claim user's rewards
+- if lockId is 0, then will claim total rewards for all lcoks
+
+```
 function claimRewards(address user) external {}
 ```
 
-- compound: lock user's rewards tokens into vault again
+### compound
 
-```js
-  function compound(address user, uint256 rewards) external {}
+- lock user's rewards into vault again
+- this is for one lock.
+
 ```
-
-- specialUnLock 💢 : user can unlock before lock time but that time is bigger than admin's MINIMUM_UNLOCK.
-  @notice At that time, user can't get reward.
-
-```js
-  function specialUnLock(uint256 amount) external {}
+  function compound(uint256 lockId, address user, uint256 rewards) external {}
 ```
-
-
-- transfer 💢 : user can tranfer reward amount from one to other user.
-
-```js
-  function transfer(address user, address receiver, uint256 reward) external {}
-```
-
-- flashLoan 💢 : users can call this function to do flashloan borrow using ERC3156 Flash Loan. If flashLoan status is successful, flashLoanFee will be tranferred to StakingVault.
-
-```js
-  function flashLoan(
-      IERC3156FlashBorrower _receiver,
-      address _token,
-      uint256 _amount,
-      bytes calldata _data
-    ) external returns (bool)
- ```
 
 ### Admin Functions
 
-- lockFor: create lock for other user
+#### lockFor
 
-```js
+- create lock for other user
+
+```
 function lockFor(address user, uint256 amount, uint256 period) external {}
 ```
 
-- setRewardDistributor: owner can set rewardDistributor using this function
+#### pause/unpause functions
 
-```js
-function setRewardDistributor(address distributor) external {}
+### Adding tokens to distribute as rewards
+
+#### addRewards: this function will retrieve rewards from caller for reward distribution.
+
 ```
-
-- pause/unpause contract
-
-
-- unLockfor 💢 : admin can unlock user's amount..
-
-```js
-  function unLockFor(address user, uint256 reward) external {}
-```
-
-- updateCode 💢 : This contract is using UUPS proxy pattern and admin can upgrade using updateCode function.
-
-```js
-  function updateCode(address newCode) external {}
-```
-
-- updateFlashloanRate 💢 : Admin can update the flashLoanRate using this function.
-
-```js
-  function updateFlashloanRate(uint256 newRate) external {}
-```
-
-- emergencyUnLock 💢 : Admin can call this function to do emergency unLock Staking ERC20 token when the StakingVault is paused.
-
-```js
-  function emergencyUnLock(address user, uint256 amount) external {}
-```
-
-### rewardDistribution function
-
-- notifyRewardAmount 💢 : rewardDistributor will call this function after adding or removing funds to distribute as rewards. (add: true, remove: false)
-
-```js
-function notifyRewardAmount(uint256 reward, bool status) external onlyRewardDistributor {
-    // The reward tokens must have already been transferred to this contract before calling this function
-}
+function addRewards(uint256 reward) external {}
 ```
