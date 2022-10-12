@@ -3,7 +3,7 @@ cache
 deploy
 cache
 types
+coverage
 
 #Hardhat files
 artifacts
-coverage
