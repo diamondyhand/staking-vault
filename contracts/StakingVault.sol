@@ -11,8 +11,8 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
  */
 contract StakingVault is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
-    uint256 public constant MIN_LOCK_DAYS = 30 days;
-    uint256 public constant MAX_LOCK_DAYS = 4 * 365 days;
+    uint256 public constant MIN_LOCK_DAYS = 30;
+    uint256 public constant MAX_LOCK_DAYS = 1260;
     uint256 public totalRewards;
     uint256 public totalLockedAmount;
 
@@ -97,7 +97,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         nonReentrant
         whenNotPaused
         isLockId(msg.sender, lockId)
-        (lockId)(lockId)
+        isLocked(lockId)
         isApproved(msg.sender, amount)
     {
         LockInfo storage lockInfo = lockInfoList[msg.sender][lockId];
@@ -206,6 +206,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
             }
         } else {
             _updateReward(msg.sender, lockId);
+            lockInfo = lockInfoList[user][lockId];
             rewards = lockInfo.reward;
             if (rewards > 0) {
                 lockInfo.reward = 0;
@@ -226,7 +227,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 lockId
     ) external whenNotPaused isLocked(lockId) {
         require(user == msg.sender, 'StakingVault: Not permission.');
-        LockInfo storage lockInfo = lockInfoList[user];
+        LockInfo storage lockInfo = lockInfoList[user][lockId];
         require(
             block.timestamp <= lockInfo.createdTime + lockInfo.period,
             "StakingVault: Lock's deadline has expired."
@@ -297,16 +298,15 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 period
     ) internal nonReentrant whenNotPaused isApproved(user, amount) returns (uint256 lockId) {
         require(amount > 0, 'StakingVault: a.mount zero.');
-        require(lockInfoList[msg.sender].amount == 0, 'StakingVault: You have already locked it.');
         require(MIN_LOCK_DAYS <= period && period <= MAX_LOCK_DAYS, 'StakingVault: period error.');
-        LockInfo storage lockInfo = lockInfoList[user];
+        lockId = ++lockIdList[user];
+        LockInfo storage lockInfo = lockInfoList[user][lockId];
         lockInfo.amount = amount;
         lockInfo.period = period;
         lockInfo.createdTime = block.timestamp;
         lockInfo.updatedTime = block.timestamp;
         totalLockedAmount += amount;
         stakingToken.safeTransferFrom(user, address(this), amount);
-        lockId = ++lockIdList[user];
     }
 
     /**
@@ -321,14 +321,14 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 reward;
         if (lockId == 0) {
             for (uint256 i = 1; i <= lockIdList[user]; i++) {
-                period = block.timestamp - lockInfoList[user][i].updatedTime;
+                period = (block.timestamp - lockInfoList[user][i].updatedTime) / 3600 / 24;
                 reward = (period * lockInfoList[user][i].amount) * _getRewardPerTokenForOneSecond();
                 reward /= 1e18;
                 rewards += reward;
             }
         } else {
             LockInfo storage lockInfo = lockInfoList[user][lockId];
-            period = block.timestamp - lockInfo.updatedTime;
+            period = (block.timestamp - lockInfo.updatedTime) / 3600 / 24;
             reward = (period * lockInfo.amount) * _getRewardPerTokenForOneSecond();
             reward /= 1e18;
             rewards = reward;
