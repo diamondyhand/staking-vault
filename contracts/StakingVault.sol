@@ -6,6 +6,11 @@ import '@openzeppelin/contracts/security/Pausable.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
+
+
+/// Feedback: calcualte rewards based on day, not seconds.
+/// Feedback: do not store user rewards on contract
+
 /**
  * @dev Staking Vault Contract
  */
@@ -16,7 +21,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
     uint256 public totalRewards;
     uint256 public totalLockedAmount;
 
-    address public distributor;
+    address public distributor;  /// Feedbacks: no need to use distributor in V2
     IERC20 public stakingToken;
     struct LockInfo {
         // locked amount
@@ -28,7 +33,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         // update time by increaselock
         uint256 updatedTime;
         // reward
-        uint256 reward;
+        uint256 reward;     ///  Feedbacks: Do not store this reward on contract, because we can calcualte user rewards with user locked amount and emission rate at any time.
     }
 
     // mapping (User address => (LockId => LockInfo))
@@ -45,7 +50,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         stakingToken = IERC20(_stakingToken);
     }
 
-    modifier isLocked(uint256 lockId) {
+    modifier isLocked(uint256 lockId) { /// Feedback: No need this, this check is being used in only one function
         require(
             lockInfoList[msg.sender][lockId].amount > 0,
             'StakingVault: You must be create lock.'
@@ -53,12 +58,12 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         _;
     }
 
-    modifier isLockId(address user, uint256 lockId) {
+    modifier isLockId(address user, uint256 lockId) { /// Feedback: No need this, this check is being used in only one function
         require(lockId > 0 && lockId <= lockIdList[user], 'StakingVault: lockId error.');
         _;
     }
 
-    modifier isApproved(address user, uint256 amount) {
+    modifier isApproved(address user, uint256 amount) {   /// Feedback: No need this
         require(
             stakingToken.allowance(user, address(this)) >= amount,
             'StakingVault: You must be approve.'
@@ -66,7 +71,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         _;
     }
 
-    modifier onlyRewardDistributor() {
+    modifier onlyRewardDistributor() {   /// Feedback: No need this
         require(msg.sender == distributor, 'RewardDistributor can only call this function.');
         _;
     }
@@ -97,8 +102,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         nonReentrant
         whenNotPaused
         isLockId(msg.sender, lockId)
-        (lockId)(lockId)
-        isApproved(msg.sender, amount)
+        (lockId)(lockId) /// Feedback: what's this?
+        isApproved(msg.sender, amount)  /// Feedback: No need this
     {
         LockInfo storage lockInfo = lockInfoList[msg.sender][lockId];
         require(period + lockInfo.period <= MAX_LOCK_DAYS, 'StakingVault: increase period error.');
@@ -122,7 +127,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
     function unLock(
         uint256 amount,
         uint256 lockId,
-        bool withRewards
+        bool withRewards   /// Feedback: No logic for this
     ) external nonReentrant whenNotPaused {
         require(lockId <= lockIdList[msg.sender], 'StakingVault: lockId not exist.');
         LockInfo storage lockInfo;
@@ -258,7 +263,7 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @dev owner can set rewardDistributor using this func.
      * @param _distributor distributor address for set
      */
-    function setRewardDistributor(address _distributor) external onlyOwner {
+    function setRewardDistributor(address _distributor) external onlyOwner { /// Feedback: No need this function
         distributor = _distributor;
     }
 
