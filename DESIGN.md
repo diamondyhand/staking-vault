@@ -1,12 +1,5 @@
 # 🚩 Staking-Vault Contract Design.
 
-## **StakingVault** contract
-
-- FlashBorrow Contract:  User's contract `whiteListed Contract`
-- Vault Contract:  `Main Contract`
-- Proxy Contract: `UUPS contract`
-- Proxiable Contract: `UUPS contract`
-
 ## **StakingVault Variables** 📋
 
 > constant MIN_LOCK_DAYS and MAX_LOCK_DAYS 
@@ -71,7 +64,7 @@
   /**@dev User can increaselock with below params.
    * @param lockId lockId to increase.
    * @param amount amount to increase lock.
-   * @param amount period to increase lock.
+   * @param period period to increase lock.
    */
   function increaseLock(
     uint256 lockId,
