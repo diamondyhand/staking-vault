@@ -21,12 +21,12 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface StakingVaultInterface extends ethers.utils.Interface {
   functions: {
+    "DAY_TIME()": FunctionFragment;
     "MAX_LOCK_DAYS()": FunctionFragment;
     "MIN_LOCK_DAYS()": FunctionFragment;
     "addRewards(uint256)": FunctionFragment;
     "claimRewards(address,uint256)": FunctionFragment;
     "compound(address,uint256,uint256)": FunctionFragment;
-    "distributor()": FunctionFragment;
     "getClaimableRewards(address,uint256)": FunctionFragment;
     "increaseLock(uint256,uint256,uint256)": FunctionFragment;
     "lock(uint256,uint256)": FunctionFragment;
@@ -37,7 +37,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "paused()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setPause(bool)": FunctionFragment;
-    "setRewardDistributor(address)": FunctionFragment;
     "stakingToken()": FunctionFragment;
     "totalLockedAmount()": FunctionFragment;
     "totalRewards()": FunctionFragment;
@@ -45,6 +44,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     "unLock(uint256,uint256,bool)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "DAY_TIME", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "MAX_LOCK_DAYS",
     values?: undefined
@@ -64,10 +64,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "compound",
     values: [string, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "distributor",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getClaimableRewards",
@@ -98,10 +94,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setPause", values: [boolean]): string;
   encodeFunctionData(
-    functionFragment: "setRewardDistributor",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "stakingToken",
     values?: undefined
   ): string;
@@ -122,6 +114,7 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     values: [BigNumberish, BigNumberish, boolean]
   ): string;
 
+  decodeFunctionResult(functionFragment: "DAY_TIME", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "MAX_LOCK_DAYS",
     data: BytesLike
@@ -136,10 +129,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "compound", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "distributor",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getClaimableRewards",
     data: BytesLike
@@ -162,10 +151,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setPause", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setRewardDistributor",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "stakingToken",
     data: BytesLike
@@ -247,6 +232,8 @@ export class StakingVault extends BaseContract {
   interface: StakingVaultInterface;
 
   functions: {
+    DAY_TIME(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -269,8 +256,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    distributor(overrides?: CallOverrides): Promise<[string]>;
-
     getClaimableRewards(
       user: string,
       lockId: BigNumberish,
@@ -278,9 +263,9 @@ export class StakingVault extends BaseContract {
     ): Promise<[BigNumber] & { rewards: BigNumber }>;
 
     increaseLock(
-      lockId: BigNumberish,
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -326,11 +311,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     stakingToken(overrides?: CallOverrides): Promise<[string]>;
 
     totalLockedAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -349,6 +329,8 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
   MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -372,8 +354,6 @@ export class StakingVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  distributor(overrides?: CallOverrides): Promise<string>;
-
   getClaimableRewards(
     user: string,
     lockId: BigNumberish,
@@ -381,9 +361,9 @@ export class StakingVault extends BaseContract {
   ): Promise<BigNumber>;
 
   increaseLock(
-    lockId: BigNumberish,
     amount: BigNumberish,
     period: BigNumberish,
+    lockId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -429,11 +409,6 @@ export class StakingVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRewardDistributor(
-    _distributor: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   stakingToken(overrides?: CallOverrides): Promise<string>;
 
   totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
@@ -453,6 +428,8 @@ export class StakingVault extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
+
     MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
     MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
@@ -472,8 +449,6 @@ export class StakingVault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    distributor(overrides?: CallOverrides): Promise<string>;
-
     getClaimableRewards(
       user: string,
       lockId: BigNumberish,
@@ -481,9 +456,9 @@ export class StakingVault extends BaseContract {
     ): Promise<BigNumber>;
 
     increaseLock(
-      lockId: BigNumberish,
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -523,11 +498,6 @@ export class StakingVault extends BaseContract {
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     setPause(pause: boolean, overrides?: CallOverrides): Promise<void>;
-
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     stakingToken(overrides?: CallOverrides): Promise<string>;
 
@@ -579,6 +549,8 @@ export class StakingVault extends BaseContract {
   };
 
   estimateGas: {
+    DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
+
     MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
     MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
@@ -601,8 +573,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    distributor(overrides?: CallOverrides): Promise<BigNumber>;
-
     getClaimableRewards(
       user: string,
       lockId: BigNumberish,
@@ -610,9 +580,9 @@ export class StakingVault extends BaseContract {
     ): Promise<BigNumber>;
 
     increaseLock(
-      lockId: BigNumberish,
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -650,11 +620,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     stakingToken(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
@@ -675,6 +640,8 @@ export class StakingVault extends BaseContract {
   };
 
   populateTransaction: {
+    DAY_TIME(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -697,8 +664,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    distributor(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     getClaimableRewards(
       user: string,
       lockId: BigNumberish,
@@ -706,9 +671,9 @@ export class StakingVault extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     increaseLock(
-      lockId: BigNumberish,
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -746,11 +711,6 @@ export class StakingVault extends BaseContract {
 
     setPause(
       pause: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setRewardDistributor(
-      _distributor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
