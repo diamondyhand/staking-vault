@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/security/Pausable.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-/// Feedback: do not store user rewards on contract
+/// Feedback: do not store user rewards on contract(I don't understand about it.)
 
 /**
  * @dev Staking Vault Contract
@@ -300,8 +300,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
             }
             if (claimReward) {
                 lockInfo.reward = 0;
+                rewards = lockInfo.reward + newReward;
             }
-            rewards = lockInfo.reward + newReward;
         }
     }
 
