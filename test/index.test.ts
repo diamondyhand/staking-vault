@@ -217,6 +217,7 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).lock(UST200K, 300);
                 await timeTravel(230 * dayTime);
                 await StakingVault.connect(Tom).claimRewards(Tom.address, 1);
+                await StakingVault.connect(Tom).claimRewards(Tom.address, 0);
             });
         })
     });

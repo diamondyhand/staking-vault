@@ -6,8 +6,6 @@ import '@openzeppelin/contracts/security/Pausable.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-/// Feedback: do not store user rewards on contract(I don't understand about it.)
-
 /**
  * @dev Staking Vault Contract
  */
@@ -28,8 +26,6 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         uint256 createdTime;
         // update time by increaselock
         uint256 updatedTime;
-        // reward
-        uint256 reward; ///  Feedbacks: Do not store this reward on contract, because we can calcualte user rewards with user locked amount and emission rate at any time.
     }
 
     // mapping (User address => (LockId => LockInfo))
@@ -72,11 +68,9 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         require(lockInfo.amount > 0, 'StakingVault: You must be create lock.');
         require(period + lockInfo.period <= MAX_LOCK_DAYS, 'StakingVault: increase period error.');
         require(
-            block.timestamp <= lockInfo.createdTime + lockInfo.period * DAY_TIME,
+            _getDay(block.timestamp) <= lockInfo.createdTime + lockInfo.period,
             "StakingVault: Lock's deadline has expired."
         );
-        // param false: only updateReward, true: claimReward:
-        _updateReward(msg.sender, lockId, false);
         lockInfo.period += period;
         lockInfo.amount += amount;
         totalLockedAmount += amount;
@@ -97,12 +91,17 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         LockInfo storage lockInfo;
         require(lockId <= lockIdList[msg.sender], 'StakingVault: lockId not exist.');
         uint256 rewards = 0;
+        uint256 period;
         // claim or unclaim(only update) process
-        rewards = _updateReward(msg.sender, lockId, withRewards);
         if (lockId == 0) {
             for (uint256 i = 1; i <= lockIdList[msg.sender]; i++) {
                 lockInfo = lockInfoList[msg.sender][i];
-                if (block.timestamp - lockInfo.createdTime >= lockInfo.period * DAY_TIME) {
+                if (withRewards) {
+                    period = (_getDay(block.timestamp) - lockInfo.updatedTime);
+                    rewards += _getUserRewardPerLock(period, lockInfo.amount);
+                    lockInfo.updatedTime = _getDay(block.timestamp);
+                }
+                if (_getDay(block.timestamp) - lockInfo.createdTime >= lockInfo.period) {
                     if (amount >= lockInfo.amount) {
                         amount -= lockInfo.amount;
                     } else {
@@ -110,16 +109,18 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
                         amount = 0;
                     }
                 }
-                if (amount == 0) break;
             }
             require(amount == 0, 'StakingVault: all unlock amount error.');
         } else {
             lockInfo = lockInfoList[msg.sender][lockId];
             require(
-                block.timestamp - lockInfo.createdTime >= lockInfo.period * DAY_TIME,
+                _getDay(block.timestamp) - lockInfo.createdTime >= lockInfo.period,
                 'StakingVault: You can unlock after lock period.'
             );
             require(amount <= lockInfo.amount, 'StakingVault: unlock amount error.');
+            period = _getDay(block.timestamp) - lockInfo.updatedTime;
+            rewards = _getUserRewardPerLock(period, lockInfo.amount);
+            lockInfo.updatedTime = _getDay(block.timestamp);
             lockInfo.amount -= amount;
         }
         totalLockedAmount -= amount;
@@ -133,28 +134,26 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      * @return rewards
      */
     function getClaimableRewards(address user, uint256 lockId)
-        public
+        external
         view
         whenNotPaused
         returns (uint256 rewards)
     {
-        // user can only return reward.
         require(lockId <= lockIdList[user], 'StakingVault: lockId not exist.');
         uint256 period;
         uint256 newReward;
+        LockInfo storage lockInfo;
         if (lockId == 0) {
             for (uint256 i = 1; i <= lockIdList[user]; i++) {
-                period = (block.timestamp - lockInfoList[user][i].updatedTime) / 3600 / 24;
-                newReward = (period * lockInfoList[user][i].amount) * _getRewardPerTokenForOneDay();
-                newReward /= 1e18;
-                rewards = rewards + newReward + lockInfoList[user][i].reward;
+                lockInfo = lockInfoList[user][i];
+                period = _getDay(block.timestamp) - lockInfoList[user][i].updatedTime;
+                newReward = _getUserRewardPerLock(period, lockInfo.amount);
+                rewards += newReward;
             }
         } else {
-            LockInfo storage lockInfo = lockInfoList[user][lockId];
-            period = (block.timestamp - lockInfoList[user][lockId].updatedTime) / 3600 / 24;
-            newReward = (period * lockInfo.amount) * _getRewardPerTokenForOneDay();
-            newReward /= 1e18;
-            rewards = lockInfo.reward + newReward;
+            lockInfo = lockInfoList[user][lockId];
+            period = _getDay(block.timestamp) - lockInfoList[user][lockId].updatedTime;
+            rewards = _getUserRewardPerLock(period, lockInfo.amount);
         }
     }
 
@@ -165,7 +164,25 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
      */
     function claimRewards(address user, uint256 lockId) external nonReentrant whenNotPaused {
         require(user == msg.sender, 'StakingVault: Not permission.');
-        uint256 rewards = _updateReward(user, lockId, true);
+        require(lockId <= lockIdList[user], 'StakingVault: lockId not exist.');
+        uint256 period;
+        uint256 newReward;
+        uint256 rewards;
+        LockInfo storage lockInfo;
+        if (lockId == 0) {
+            for (uint256 i = 1; i <= lockIdList[user]; i++) {
+                lockInfo = lockInfoList[user][i];
+                period = _getDay(block.timestamp) - lockInfoList[user][i].updatedTime;
+                newReward = _getUserRewardPerLock(period, lockInfo.amount);
+                rewards += newReward;
+                lockInfo.updatedTime = _getDay(block.timestamp);
+            }
+        } else {
+            lockInfo = lockInfoList[user][lockId];
+            period = _getDay(block.timestamp) - lockInfoList[user][lockId].updatedTime;
+            rewards = _getUserRewardPerLock(period, lockInfo.amount);
+            lockInfo.updatedTime = _getDay(block.timestamp);
+        }
         stakingToken.safeTransfer(user, rewards);
     }
 
@@ -184,15 +201,20 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         require(lockId <= lockIdList[msg.sender] && lockId != 0, 'StakingVault: lockId not exist.');
         LockInfo storage lockInfo = lockInfoList[user][lockId];
         require(
-            block.timestamp <= lockInfo.createdTime + lockInfo.period * DAY_TIME,
+            _getDay(block.timestamp) <= lockInfo.createdTime + lockInfo.period,
             "StakingVault: Lock's deadline has expired."
         );
-        _updateReward(msg.sender, lockId, false);
-        require(rewards <= lockInfo.reward, 'StakingVault: Not Enough compound rewards.');
+        uint256 period = _getDay(block.timestamp) - lockInfo.updatedTime;
+        require(
+            rewards <= _getUserRewardPerLock(period, lockInfo.amount),
+            'StakingVault: Not Enough compound rewards.'
+        );
+        uint256 perTokenOneDay = (totalRewards * 1e18) / totalLockedAmount / MAX_LOCK_DAYS;
+        uint256 selectRewardPeriod = ((rewards * 1e18) / perTokenOneDay / lockInfo.amount);
+        lockInfo.updatedTime = lockInfo.updatedTime + DAY_TIME * selectRewardPeriod;
         lockInfo.amount += rewards;
         totalLockedAmount += rewards;
         totalRewards -= rewards;
-        lockInfo.reward -= rewards;
     }
 
     /// Admin Functions
@@ -243,74 +265,31 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         require(amount > 0, 'StakingVault: amount zero.');
         require(MIN_LOCK_DAYS <= period && period <= MAX_LOCK_DAYS, 'StakingVault: period error.');
         lockId = ++lockIdList[user];
-
         LockInfo storage lockInfo = lockInfoList[user][lockId];
         lockInfo.amount = amount;
         lockInfo.period = period;
-        lockInfo.createdTime = block.timestamp;
-        lockInfo.updatedTime = block.timestamp;
+        lockInfo.createdTime = _getDay(block.timestamp);
+        lockInfo.updatedTime = _getDay(block.timestamp);
         totalLockedAmount += amount;
         stakingToken.safeTransferFrom(user, address(this), amount);
     }
 
     /**
-     * @dev you can get or update user's rewards via this function.
-     * @param user user's address
-     * @param lockId user's lock id
-     * @return rewards
-     */
-    function _updateReward(
-        address user,
-        uint256 lockId,
-        bool claimReward
-    ) internal returns (uint256 rewards) {
-        require(lockId <= lockIdList[user], 'StakingVault: lockId not exist.');
-        uint256 period;
-        uint256 newReward;
-        uint256 newRewards = 0;
-        if (lockId == 0) {
-            for (uint256 i = 1; i <= lockIdList[user]; i++) {
-                period = (block.timestamp - lockInfoList[user][i].updatedTime) / DAY_TIME;
-                newReward = (period * lockInfoList[user][i].amount) * _getRewardPerTokenForOneDay();
-                newReward /= 1e18;
-                newRewards += newReward;
-                if (newReward > 0) {
-                    lockInfoList[user][i].reward += newReward;
-                    lockInfoList[user][i].updatedTime = block.timestamp;
-                }
-                if (claimReward) {
-                    rewards = rewards + lockInfoList[user][i].reward + newReward;
-                    lockInfoList[user][i].reward = 0;
-                }
-            }
-            if (claimReward) {
-                totalRewards -= rewards;
-            } else {
-                totalRewards += newRewards;
-            }
-        } else {
-            LockInfo storage lockInfo = lockInfoList[user][lockId];
-            period = (block.timestamp - lockInfo.updatedTime) / DAY_TIME;
-            newReward = (period * lockInfo.amount) * _getRewardPerTokenForOneDay();
-            newReward /= 1e18;
-            if (newReward > 0) {
-                lockInfo.reward += newReward;
-                totalRewards += newReward;
-                lockInfo.updatedTime = block.timestamp;
-            }
-            if (claimReward) {
-                lockInfo.reward = 0;
-                rewards = lockInfo.reward + newReward;
-            }
-        }
-    }
-
-    /**
      * @dev users can get formula's rewards_per_token_for_one_day via this function.
      */
-    function _getRewardPerTokenForOneDay() internal view returns (uint256 dayReward) {
-        dayReward =
+    function _getUserRewardPerLock(uint256 period, uint256 amount)
+        internal
+        view
+        returns (uint256 reward)
+    {
+        reward =
             ((totalRewards * 1e18) / (totalLockedAmount == 0 ? 1 : totalLockedAmount)) /
             MAX_LOCK_DAYS;
+        reward = reward * period * amount;
+        reward /= 1e18;
+    }
+
+    function _getDay(uint256 time) internal pure returns (uint256 day) {
+        day = time / DAY_TIME;
     }
 }

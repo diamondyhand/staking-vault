@@ -289,12 +289,11 @@ export class StakingVault extends BaseContract {
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amount: BigNumber;
         period: BigNumber;
         createdTime: BigNumber;
         updatedTime: BigNumber;
-        reward: BigNumber;
       }
     >;
 
@@ -387,12 +386,11 @@ export class StakingVault extends BaseContract {
     arg1: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber] & {
       amount: BigNumber;
       period: BigNumber;
       createdTime: BigNumber;
       updatedTime: BigNumber;
-      reward: BigNumber;
     }
   >;
 
@@ -482,12 +480,11 @@ export class StakingVault extends BaseContract {
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amount: BigNumber;
         period: BigNumber;
         createdTime: BigNumber;
         updatedTime: BigNumber;
-        reward: BigNumber;
       }
     >;
 
