@@ -108,15 +108,29 @@ describe("StakingVault Contract Test.", () => {
 
 
             it("revert if unlock all amount is bigger than locked amount.", async () => {
-                await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
+                await StakingToken.connect(Tom).approve(StakingVault.address, UST300K);
+                await StakingVault.connect(Tom).addRewards(UST100);
+
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await timeTravel(67 * dayTime);
-                await StakingVault.connect(Tom).lock(UST100, 30);
+                // await StakingVault.connect(Tom).lock(UST100, 30);
                 await expect(StakingVault.connect(Tom).unLock(UST1K, 0, false)).to.be.revertedWith("StakingVault: all unlock amount error.");
                 await StakingVault.connect(Tom).unLock(UST250, 0, true);
             })
+
+            it("revert if unlock all amount is bigger than locked amount.(updateReward)", async () => {
+                await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await StakingVault.connect(Tom).lock(UST100, 70);
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await timeTravel(67 * dayTime);
+
+                await StakingVault.connect(Tom).unLock(UST250, 0, true);
+            })
+
 
             it("unLock is successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);

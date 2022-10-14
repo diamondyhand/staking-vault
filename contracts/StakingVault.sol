@@ -97,11 +97,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         LockInfo storage lockInfo;
         require(lockId <= lockIdList[msg.sender], 'StakingVault: lockId not exist.');
         uint256 rewards = 0;
-        // claim or unclaim process
+        // claim or unclaim(only update) process
         rewards = _updateReward(msg.sender, lockId, withRewards);
-        if (withRewards) {
-            totalRewards -= rewards;
-        }
         if (lockId == 0) {
             for (uint256 i = 1; i <= lockIdList[msg.sender]; i++) {
                 lockInfo = lockInfoList[msg.sender][i];
@@ -282,11 +279,15 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
                     lockInfoList[user][i].updatedTime = block.timestamp;
                 }
                 if (claimReward) {
+                    rewards = rewards + lockInfoList[user][i].reward + newReward;
                     lockInfoList[user][i].reward = 0;
                 }
-                rewards = lockInfoList[user][i].reward;
             }
-            totalRewards += newRewards;
+            if (claimReward) {
+                totalRewards -= rewards;
+            } else {
+                totalRewards += newRewards;
+            }
         } else {
             LockInfo storage lockInfo = lockInfoList[user][lockId];
             period = (block.timestamp - lockInfo.updatedTime) / DAY_TIME;
