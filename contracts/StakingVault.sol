@@ -97,12 +97,8 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
         if (lockId == 0) {
             for (uint256 i = 1; i <= lockIdList[msg.sender]; i++) {
                 lockInfo = lockInfoList[msg.sender][i];
-                if (withRewards) {
-                    period = nowDay - lockInfo.updatedTime;
-                    rewards += _getUserRewardPerLock(period, lockInfo.amount);
-                    lockInfo.updatedTime = nowDay;
-                }
-                if (nowDay - lockInfo.createdTime >= lockInfo.period) {
+                // unlock
+                if (nowDay - lockInfo.createdTime >= lockInfo.period && amount != 0) {
                     if (amount >= lockInfo.amount) {
                         amount -= lockInfo.amount;
                     } else {
@@ -110,6 +106,12 @@ contract StakingVault is Ownable, Pausable, ReentrancyGuard {
                         amount = 0;
                     }
                 }
+                // claim reward
+                if (withRewards) {
+                    period = nowDay - lockInfo.updatedTime;
+                    rewards += _getUserRewardPerLock(period, lockInfo.amount);
+                    lockInfo.updatedTime = nowDay;
+                } else if (amount == 0) break;
             }
             require(amount == 0, 'StakingVault: all unlock amount error.');
         } else {

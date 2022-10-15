@@ -129,6 +129,14 @@ describe("StakingVault Contract Test.", () => {
                 await timeTravel(67 * dayTime);
 
                 await StakingVault.connect(Tom).unLock(UST250, 0, true);
+
+                /// unlock false
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await StakingVault.connect(Tom).lock(UST100, 70);
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await StakingVault.connect(Tom).lock(UST100, 30);
+                await timeTravel(67 * dayTime);
+                await StakingVault.connect(Tom).unLock(UST250, 0, false);
             })
 
 
