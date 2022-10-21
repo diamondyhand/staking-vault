@@ -58,18 +58,26 @@ describe("StakingVault Contract Test.", () => {
             it("lock is successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST100, 30);
+                // variable
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(100, UST_DECIMAL).toBigInt(),
+                );
             })
         })
 
         describe("increaseLock function.", () => {
             it("revert if lock is not created.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
-                await expect(StakingVault.connect(Tom).increaseLock(UST1K, 60, 1)).to.be.revertedWith("StakingVault: You must be create lock.");
+                await expect(StakingVault.connect(Tom).increaseLock(UST1K, 60, 1)).to.be.revertedWith("StakingVault: lockId not exist.");
             });
 
             it("revert if param period is overflow.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST100, 30);
+
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(100, UST_DECIMAL).toBigInt(),
+                );
                 await expect(StakingVault.connect(Tom).increaseLock(UST100, 2000, 1)).to.be.revertedWith("StakingVault: increase period error.");
             })
 
@@ -78,12 +86,18 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await timeTravel(67 * dayTime);
                 await expect(StakingVault.connect(Tom).increaseLock(UST100, 20, 1)).to.be.revertedWith("StakingVault: Lock's deadline has expired.");
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(100, UST_DECIMAL).toBigInt(),
+                );
             })
 
             it("increase successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).increaseLock(UST100, 20, 1);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(200, UST_DECIMAL).toBigInt(),
+                );
             })
         })
 
@@ -96,12 +110,20 @@ describe("StakingVault Contract Test.", () => {
             it("revert if lock period is not expired.(lockId != 0)", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST100, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(100, UST_DECIMAL).toBigInt(),
+                );
                 await expect(StakingVault.connect(Tom).unLock(UST100, 1, false)).to.be.revertedWith("StakingVault: You can unlock after lock period.");
             })
 
             it("revert if unlock amount is bigger than locked amount.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST100, 30);
+
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(100, UST_DECIMAL).toBigInt(),
+                );
+
                 await timeTravel(67 * dayTime);
                 await expect(StakingVault.connect(Tom).unLock(UST200, 1, false)).to.be.revertedWith("StakingVault: unlock amount error.");
             })
@@ -114,10 +136,11 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
-                await timeTravel(67 * dayTime);
-                // await StakingVault.connect(Tom).lock(UST100, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(400, UST_DECIMAL).toBigInt(),
+                );
+                await timeTravel(60 * dayTime);
                 await expect(StakingVault.connect(Tom).unLock(UST1K, 0, false)).to.be.revertedWith("StakingVault: all unlock amount error.");
-                await StakingVault.connect(Tom).unLock(UST250, 0, true);
             })
 
             it("revert if unlock all amount is bigger than locked amount.(updateReward)", async () => {
@@ -126,9 +149,15 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).lock(UST100, 70);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(400, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(67 * dayTime);
 
                 await StakingVault.connect(Tom).unLock(UST250, 0, true);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(150, UST_DECIMAL).toBigInt(),
+                );
 
                 /// unlock false
                 await StakingVault.connect(Tom).lock(UST100, 30);
@@ -136,16 +165,30 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await StakingVault.connect(Tom).lock(UST100, 30);
                 await timeTravel(67 * dayTime);
+
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(550, UST_DECIMAL).toBigInt(),
+                );
                 await StakingVault.connect(Tom).unLock(UST250, 0, false);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(300, UST_DECIMAL).toBigInt(),
+                );
             })
 
 
             it("unLock is successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Tom).lock(UST200, 30);
+
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(200, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(100 * dayTime);
                 await StakingVault.connect(Tom).unLock(UST100, 1, false);
                 await StakingVault.connect(Tom).unLock(UST100, 1, false);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(0, UST_DECIMAL).toBigInt(),
+                );
             })
         })
 
@@ -153,6 +196,9 @@ describe("StakingVault Contract Test.", () => {
             it("lockFor is successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
                 await StakingVault.connect(Admin).lockFor(Tom.address, UST1K, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(1000, UST_DECIMAL).toBigInt(),
+                );
             });
         })
 
@@ -166,7 +212,10 @@ describe("StakingVault Contract Test.", () => {
         describe("addRewards function.", () => {
             it("addRewards is successful.", async () => {
                 await StakingToken.connect(Tom).approve(StakingVault.address, UST1K);
-                await StakingVault.connect(Tom).addRewards(UST1K)
+                await StakingVault.connect(Tom).addRewards(UST1K);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(1000, UST_DECIMAL).toBigInt(),
+                );
             });
         })
 
@@ -175,22 +224,31 @@ describe("StakingVault Contract Test.", () => {
             it("revert if user is not msg.sender and lock is not exist.", async () => {
                 await StakingToken.connect(Jerry).approve(StakingVault.address, UST300K);
                 await StakingVault.connect(Jerry).lock(UST300K, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(3 * 10 ** 5, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(20 * dayTime);
-                await expect(StakingVault.connect(Jerry).compound(Tom.address, UST100, 1)).to.be.revertedWith("StakingVault: Not permission.");
-                await expect(StakingVault.connect(Jerry).compound(Jerry.address, UST100, 0)).to.be.revertedWith("StakingVault: lockId not exist.");
+                // await expect(StakingVault.connect(Jerry).compound(UST100, 1)).to.be.revertedWith("StakingVault: Not permission.");
+                await expect(StakingVault.connect(Jerry).compound(UST100, 0)).to.be.revertedWith("StakingVault: lockId not exist.");
             })
             it("revert if Lock's deadline has expired.", async () => {
                 await StakingToken.connect(Jerry).approve(StakingVault.address, UST300K);
                 await StakingVault.connect(Jerry).lock(UST300K, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(3 * 10 ** 5, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(40 * dayTime);
-                await expect(StakingVault.connect(Jerry).compound(Jerry.address, UST100, 1)).to.be.revertedWith("StakingVault: Lock's deadline has expired.");
+                await expect(StakingVault.connect(Jerry).compound(UST100, 1)).to.be.revertedWith("StakingVault: Lock's deadline has expired.");
             })
 
             it("revert if reward is not enough.", async () => {
                 await StakingToken.connect(Jerry).approve(StakingVault.address, UST300K);
                 await StakingVault.connect(Jerry).lock(UST300K, 30);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(3 * 10 ** 5, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(20 * dayTime);
-                await expect(StakingVault.connect(Jerry).compound(Jerry.address, UST100, 1)).to.be.revertedWith("StakingVault: Not Enough compound rewards.");
+                await expect(StakingVault.connect(Jerry).compound(UST100, 1)).to.be.revertedWith("StakingVault: Not Enough compound rewards.");
             })
 
             it("compound is successful.", async () => {
@@ -198,6 +256,9 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).addRewards(UST100);
 
                 await StakingVault.connect(Tom).lock(UST200K, 600);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(2 * 10 ** 5 + 100, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(530 * dayTime);
                 const TomReward = await StakingVault.getClaimableRewards(Tom.address, 1);
                 const TotalReward = await StakingVault.getClaimableRewards(Tom.address, 0);
@@ -205,17 +266,13 @@ describe("StakingVault Contract Test.", () => {
                 // revert if getClaimableRewards function lockId not exist.
                 await expect(StakingVault.getClaimableRewards(Tom.address, 3)).to.be.revertedWith("StakingVault: lockId not exist.");
 
-                await StakingVault.connect(Tom).compound(Tom.address, UST10, 1);
+                await StakingVault.connect(Tom).compound(UST10, 1);
             });
         })
 
         describe("claimRewards function.", () => {
-            it("revert if user is not msg.sender.", async () => {
-                await expect(StakingVault.connect(Admin).claimRewards(Tom.address, 1)).to.be.revertedWith("StakingVault: Not permission.");
-            });
-
             it("revert if lockId not exist.", async () => {
-                await expect(StakingVault.connect(Admin).claimRewards(Admin.address, 2)).to.be.revertedWith("StakingVault: lockId not exist.");
+                await expect(StakingVault.connect(Admin).claimRewards(2)).to.be.revertedWith("StakingVault: lockId not exist.");
             });
 
             it("claimRewards successful.", async () => {
@@ -223,9 +280,12 @@ describe("StakingVault Contract Test.", () => {
                 await StakingVault.connect(Tom).addRewards(UST100);
 
                 await StakingVault.connect(Tom).lock(UST200K, 300);
+                expect(await StakingToken.balanceOf(StakingVault.address)).to.be.equal(
+                    toWei(2 * 10 ** 5 + 100, UST_DECIMAL).toBigInt(),
+                );
                 await timeTravel(230 * dayTime);
-                await StakingVault.connect(Tom).claimRewards(Tom.address, 1);
-                await StakingVault.connect(Tom).claimRewards(Tom.address, 0);
+                await StakingVault.connect(Tom).claimRewards(1);
+                await StakingVault.connect(Tom).claimRewards(0);
             });
         })
     });
