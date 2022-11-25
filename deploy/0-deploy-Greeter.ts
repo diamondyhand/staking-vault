@@ -9,7 +9,7 @@ const deployGreeter: DeployFunction = async function (hre: HardhatRuntimeEnviron
   } = hre;
   const { deployer } = await getNamedAccounts();
 
-  await deploy('Greeter', {
+  await deploy('index', {
     from: deployer,
     args: ['greeting'],
     log: true,
@@ -17,4 +17,4 @@ const deployGreeter: DeployFunction = async function (hre: HardhatRuntimeEnviron
 };
 
 export default deployGreeter;
-deployGreeter.tags = ['Greeter'];
+deployGreeter.tags = ['index'];

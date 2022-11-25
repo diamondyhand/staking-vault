@@ -21,56 +21,52 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface StakingVaultInterface extends ethers.utils.Interface {
   functions: {
-    "MAXIMUM_LOCK_PERIOD()": FunctionFragment;
-    "MINIMUM_LOCK_PERIOD()": FunctionFragment;
-    "claimRewards(address)": FunctionFragment;
-    "compound(address,uint256)": FunctionFragment;
-    "distributor()": FunctionFragment;
-    "getClaimableRewards(address)": FunctionFragment;
-    "increaseLock(uint256,uint256)": FunctionFragment;
+    "DAY_TIME()": FunctionFragment;
+    "MAX_LOCK_DAYS()": FunctionFragment;
+    "MIN_LOCK_DAYS()": FunctionFragment;
+    "addRewards(uint256)": FunctionFragment;
+    "claimRewards(uint256)": FunctionFragment;
+    "compound(uint256,uint256)": FunctionFragment;
+    "getClaimableRewards(address,uint256)": FunctionFragment;
+    "increaseLock(uint256,uint256,uint256)": FunctionFragment;
     "lock(uint256,uint256)": FunctionFragment;
     "lockFor(address,uint256,uint256)": FunctionFragment;
-    "lockInfoList(address)": FunctionFragment;
-    "notifyRewardAmount(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setPause(bool)": FunctionFragment;
-    "setRewardDistributor(address)": FunctionFragment;
-    "stakingToken()": FunctionFragment;
-    "totalLockedAmount()": FunctionFragment;
-    "totalRewards()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "unLock(uint256)": FunctionFragment;
+    "unLock(uint256,uint256,bool)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "DAY_TIME", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "MAXIMUM_LOCK_PERIOD",
+    functionFragment: "MAX_LOCK_DAYS",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "MINIMUM_LOCK_PERIOD",
+    functionFragment: "MIN_LOCK_DAYS",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addRewards",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "claimRewards",
-    values: [string]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "compound",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "distributor",
-    values?: undefined
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getClaimableRewards",
-    values: [string]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "increaseLock",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "lock",
@@ -80,14 +76,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
     functionFragment: "lockFor",
     values: [string, BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "lockInfoList",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "notifyRewardAmount",
-    values: [BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
@@ -96,47 +84,29 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setPause", values: [boolean]): string;
   encodeFunctionData(
-    functionFragment: "setRewardDistributor",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "stakingToken",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalLockedAmount",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalRewards",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "unLock",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish, boolean]
   ): string;
 
+  decodeFunctionResult(functionFragment: "DAY_TIME", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "MAXIMUM_LOCK_PERIOD",
+    functionFragment: "MAX_LOCK_DAYS",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "MINIMUM_LOCK_PERIOD",
+    functionFragment: "MIN_LOCK_DAYS",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addRewards", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "claimRewards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "compound", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "distributor",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getClaimableRewards",
     data: BytesLike
@@ -147,14 +117,6 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lockFor", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "lockInfoList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "notifyRewardAmount",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
@@ -163,43 +125,86 @@ interface StakingVaultInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setPause", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setRewardDistributor",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "stakingToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalLockedAmount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalRewards",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unLock", data: BytesLike): Result;
 
   events: {
+    "Compounded(address,uint256,uint256)": EventFragment;
+    "LockIncreased(address,uint256,uint256,uint256)": EventFragment;
+    "Locked(address,uint256,uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
+    "RewardsAdded(address,uint256)": EventFragment;
+    "RewardsClaimed(address,uint256,uint256)": EventFragment;
+    "UnLocked(address,uint256,bool,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Compounded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LockIncreased"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Locked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RewardsAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RewardsClaimed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UnLocked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
+
+export type CompoundedEvent = TypedEvent<
+  [string, BigNumber, BigNumber] & {
+    user: string;
+    rewards: BigNumber;
+    lockId: BigNumber;
+  }
+>;
+
+export type LockIncreasedEvent = TypedEvent<
+  [string, BigNumber, BigNumber, BigNumber] & {
+    user: string;
+    amount: BigNumber;
+    period: BigNumber;
+    lockId: BigNumber;
+  }
+>;
+
+export type LockedEvent = TypedEvent<
+  [string, BigNumber, BigNumber, BigNumber] & {
+    user: string;
+    amount: BigNumber;
+    period: BigNumber;
+    lockId: BigNumber;
+  }
+>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
 >;
 
 export type PausedEvent = TypedEvent<[string] & { account: string }>;
+
+export type RewardsAddedEvent = TypedEvent<
+  [string, BigNumber] & { user: string; rewards: BigNumber }
+>;
+
+export type RewardsClaimedEvent = TypedEvent<
+  [string, BigNumber, BigNumber] & {
+    user: string;
+    rewards: BigNumber;
+    lockId: BigNumber;
+  }
+>;
+
+export type UnLockedEvent = TypedEvent<
+  [string, BigNumber, boolean, BigNumber] & {
+    user: string;
+    amount: BigNumber;
+    withRewards: boolean;
+    lockId: BigNumber;
+  }
+>;
 
 export type UnpausedEvent = TypedEvent<[string] & { account: string }>;
 
@@ -247,31 +252,38 @@ export class StakingVault extends BaseContract {
   interface: StakingVaultInterface;
 
   functions: {
-    MAXIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
+    DAY_TIME(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    MINIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
+    MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    claimRewards(
-      user: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    compound(
-      user: string,
+    addRewards(
       rewards: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    distributor(overrides?: CallOverrides): Promise<[string]>;
+    claimRewards(
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    compound(
+      rewards: BigNumberish,
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     getClaimableRewards(
       user: string,
+      lockId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { reward: BigNumber }>;
+    ): Promise<[BigNumber] & { rewards: BigNumber }>;
 
     increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -285,24 +297,6 @@ export class StakingVault extends BaseContract {
       user: string,
       amount: BigNumberish,
       period: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    lockInfoList(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-        amount: BigNumber;
-        period: BigNumber;
-        startTime: BigNumber;
-        updateTime: BigNumber;
-        reward: BigNumber;
-      }
-    >;
-
-    notifyRewardAmount(
-      reward: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -319,17 +313,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    stakingToken(overrides?: CallOverrides): Promise<[string]>;
-
-    totalLockedAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    totalRewards(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -337,35 +320,44 @@ export class StakingVault extends BaseContract {
 
     unLock(
       amount: BigNumberish,
+      lockId: BigNumberish,
+      withRewards: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
-  MAXIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+  DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
-  MINIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+  MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-  claimRewards(
-    user: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-  compound(
-    user: string,
+  addRewards(
     rewards: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  distributor(overrides?: CallOverrides): Promise<string>;
+  claimRewards(
+    lockId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  compound(
+    rewards: BigNumberish,
+    lockId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   getClaimableRewards(
     user: string,
+    lockId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   increaseLock(
     amount: BigNumberish,
     period: BigNumberish,
+    lockId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -382,24 +374,6 @@ export class StakingVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  lockInfoList(
-    arg0: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-      amount: BigNumber;
-      period: BigNumber;
-      startTime: BigNumber;
-      updateTime: BigNumber;
-      reward: BigNumber;
-    }
-  >;
-
-  notifyRewardAmount(
-    reward: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
@@ -413,17 +387,6 @@ export class StakingVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRewardDistributor(
-    _distributor: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  stakingToken(overrides?: CallOverrides): Promise<string>;
-
-  totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
-  totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
-
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -431,32 +394,41 @@ export class StakingVault extends BaseContract {
 
   unLock(
     amount: BigNumberish,
+    lockId: BigNumberish,
+    withRewards: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    MAXIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+    DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MINIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+    MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    claimRewards(user: string, overrides?: CallOverrides): Promise<void>;
+    MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    compound(
-      user: string,
-      rewards: BigNumberish,
+    addRewards(rewards: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    claimRewards(
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    distributor(overrides?: CallOverrides): Promise<string>;
+    compound(
+      rewards: BigNumberish,
+      lockId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getClaimableRewards(
       user: string,
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -464,32 +436,14 @@ export class StakingVault extends BaseContract {
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     lockFor(
       user: string,
       amount: BigNumberish,
       period: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    lockInfoList(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-        amount: BigNumber;
-        period: BigNumber;
-        startTime: BigNumber;
-        updateTime: BigNumber;
-        reward: BigNumber;
-      }
-    >;
-
-    notifyRewardAmount(
-      reward: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -499,26 +453,78 @@ export class StakingVault extends BaseContract {
 
     setPause(pause: boolean, overrides?: CallOverrides): Promise<void>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    stakingToken(overrides?: CallOverrides): Promise<string>;
-
-    totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
-
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    unLock(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    unLock(
+      amount: BigNumberish,
+      lockId: BigNumberish,
+      withRewards: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
+    "Compounded(address,uint256,uint256)"(
+      user?: string | null,
+      rewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber],
+      { user: string; rewards: BigNumber; lockId: BigNumber }
+    >;
+
+    Compounded(
+      user?: string | null,
+      rewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber],
+      { user: string; rewards: BigNumber; lockId: BigNumber }
+    >;
+
+    "LockIncreased(address,uint256,uint256,uint256)"(
+      user?: string | null,
+      amount?: null,
+      period?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      { user: string; amount: BigNumber; period: BigNumber; lockId: BigNumber }
+    >;
+
+    LockIncreased(
+      user?: string | null,
+      amount?: null,
+      period?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      { user: string; amount: BigNumber; period: BigNumber; lockId: BigNumber }
+    >;
+
+    "Locked(address,uint256,uint256,uint256)"(
+      user?: string | null,
+      amount?: null,
+      period?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      { user: string; amount: BigNumber; period: BigNumber; lockId: BigNumber }
+    >;
+
+    Locked(
+      user?: string | null,
+      amount?: null,
+      period?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      { user: string; amount: BigNumber; period: BigNumber; lockId: BigNumber }
+    >;
+
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
       newOwner?: string | null
@@ -541,6 +547,70 @@ export class StakingVault extends BaseContract {
 
     Paused(account?: null): TypedEventFilter<[string], { account: string }>;
 
+    "RewardsAdded(address,uint256)"(
+      user?: string | null,
+      rewards?: null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { user: string; rewards: BigNumber }
+    >;
+
+    RewardsAdded(
+      user?: string | null,
+      rewards?: null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { user: string; rewards: BigNumber }
+    >;
+
+    "RewardsClaimed(address,uint256,uint256)"(
+      user?: string | null,
+      rewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber],
+      { user: string; rewards: BigNumber; lockId: BigNumber }
+    >;
+
+    RewardsClaimed(
+      user?: string | null,
+      rewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber],
+      { user: string; rewards: BigNumber; lockId: BigNumber }
+    >;
+
+    "UnLocked(address,uint256,bool,uint256)"(
+      user?: string | null,
+      amount?: null,
+      withRewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, boolean, BigNumber],
+      {
+        user: string;
+        amount: BigNumber;
+        withRewards: boolean;
+        lockId: BigNumber;
+      }
+    >;
+
+    UnLocked(
+      user?: string | null,
+      amount?: null,
+      withRewards?: null,
+      lockId?: null
+    ): TypedEventFilter<
+      [string, BigNumber, boolean, BigNumber],
+      {
+        user: string;
+        amount: BigNumber;
+        withRewards: boolean;
+        lockId: BigNumber;
+      }
+    >;
+
     "Unpaused(address)"(
       account?: null
     ): TypedEventFilter<[string], { account: string }>;
@@ -549,31 +619,38 @@ export class StakingVault extends BaseContract {
   };
 
   estimateGas: {
-    MAXIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+    DAY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MINIMUM_LOCK_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+    MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    claimRewards(
-      user: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    compound(
-      user: string,
+    addRewards(
       rewards: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    distributor(overrides?: CallOverrides): Promise<BigNumber>;
+    claimRewards(
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    compound(
+      rewards: BigNumberish,
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     getClaimableRewards(
       user: string,
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -587,13 +664,6 @@ export class StakingVault extends BaseContract {
       user: string,
       amount: BigNumberish,
       period: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    lockInfoList(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    notifyRewardAmount(
-      reward: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -610,17 +680,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    stakingToken(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalLockedAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalRewards(overrides?: CallOverrides): Promise<BigNumber>;
-
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -628,40 +687,45 @@ export class StakingVault extends BaseContract {
 
     unLock(
       amount: BigNumberish,
+      lockId: BigNumberish,
+      withRewards: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    MAXIMUM_LOCK_PERIOD(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    DAY_TIME(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    MINIMUM_LOCK_PERIOD(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    MAX_LOCK_DAYS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    claimRewards(
-      user: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    MIN_LOCK_DAYS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    compound(
-      user: string,
+    addRewards(
       rewards: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    distributor(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    claimRewards(
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    compound(
+      rewards: BigNumberish,
+      lockId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     getClaimableRewards(
       user: string,
+      lockId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     increaseLock(
       amount: BigNumberish,
       period: BigNumberish,
+      lockId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -678,16 +742,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    lockInfoList(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    notifyRewardAmount(
-      reward: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -701,17 +755,6 @@ export class StakingVault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setRewardDistributor(
-      _distributor: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    stakingToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    totalLockedAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    totalRewards(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -719,6 +762,8 @@ export class StakingVault extends BaseContract {
 
     unLock(
       amount: BigNumberish,
+      lockId: BigNumberish,
+      withRewards: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
