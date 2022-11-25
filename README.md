@@ -1,104 +1,234 @@
-# Staking Vault
+# 🚩 Staking-Vault Contract Design.
 
-- Users will lock ERC20 token into the vault for up to 4 years and earn more as rewards.
-- Users can create multiple locks.
-- User's lock period should be longer than MIN_LOCK_DAYS (1 month = 30 days) and smaller than MAX_LOCK_DAYS (4 years = 1460 days)
-- Locks can be created only after there're some rewards to distribute on the vault contract.
-- Users can't withdraw before their lock period, but can claim rewards if there're.
+## **StakingVault Variables** 📋
 
-## Main logic
-
-### Reward Mechanism
-
-User rewards will be calculated based on days of lock.
-
-- rewards_per_token_for_one_day
-
-```
-rewards_per_token_for_one_day = (total_rewards / total_locked_amount) / 4_years_in_days
+> constant MIN_LOCK_DAYS and MAX_LOCK_DAYS 
+```js
+  uint256 public constant MIN_LOCK_DAYS = 30 days;
+  uint256 public constant MAX_LOCK_DAYS = 1460 days;
 ```
 
-- user_rewards_per_lock
+> uint256 **totalRewards**
+  At this time StakingVault's reward amount.
 
-```
-user_rewards_per_lock = (locked_amount * rewards_per_token_for_one_day) * (locked_period_in_days)
-```
+> uint256 **totalLockedAmount**
+  At this time StakingVault's locked amount.
 
-- User rewards are total sum of user_rewards_per_lock.
+> address **distributor**
+  user who add reward into stakingVault for calculating reward.
 
-## Functions
+> address **stakingToken**
+  stakingVault's ERC20Token address
 
-### User side functions
-
-#### lock
-
-- create lock with token amounts and lock period (max period is 4 years)
-- return lockId
-
-```
-function lock(uint256 amount, uint256 period) external returns {uint256 lockId}
-```
-
-#### increaselock
-
-- increase lock amount or period
-
-```
-function increaselock(uint256 lockId, uint256 amount, uint256 period) external {}
+> struct **LockInfo**
+- Contract's status and approved users.
+```js
+  struct LockInfo {
+    uint256 amount;
+    uint256 period;
+    uint256 createdTime;
+    uint256 updatedTime;
+    uint256 reward;
+  }
 ```
 
-#### unlock
-
-- unlock locked tokens with rewards (only after minimum lock period of 1 month)
-- if tokenId is 0, then it will unlock all locks.
-
-```
-function unlock(uint256 lockId, uint256 amount, bool withRewards) external {}
+> mapping **lockInfoList**
+```js
+  // mapping (User address => (LockId => LockInfo))
+  mapping(address => mapping(uint256 => LockInfo)) public lockInfoList;
 ```
 
-#### getClaimableRewards
-
-- returns user's claimable rewards
-- if lockId is 0, then will calculate total rewards for all locks
-
-```
-function getClaimableRewards(uint256 lockId, address user) external returns (uint256) {}
+> mapping **lockIdList**
+```js
+  // mapping (User address => LockMaxId)
+  mapping(address => uint256) public lockIdList;
 ```
 
-#### claimRewards
+## **StakingVault** Contract (Main Action) 🔧
 
-- claim user's rewards
-- if lockId is 0, then will claim total rewards for all lcoks
-
-```
-function claimRewards(address user) external {}
-```
-
-### compound
-
-- lock user's rewards into vault again
-- this is for one lock.
-
-```
-  function compound(uint256 lockId, address user, uint256 rewards) external {}
+> function **lock**()     
+```js
+  /**@dev User can lock with below params.
+   * @param amount amount to create lock.
+   * @param period period to create lock.
+   * @return lockId When create lock, User can get lockId.()
+   */
+  function lock(
+    uint256 amount,  
+    uint256 period,
+  ) external returns(uint256 lockId);
 ```
 
-### Admin Functions
-
-#### lockFor
-
-- create lock for other user
-
+> function **increaseLock**()     
+```js
+  /**@dev User can increaselock with below params.
+   * @param lockId lockId to increase.
+   * @param amount amount to increase lock.
+   * @param period period to increase lock.
+   */
+  function increaseLock(
+    uint256 lockId,
+    uint256 amount,  
+    uint256 period,
+  ) external ;
 ```
-function lockFor(address user, uint256 amount, uint256 period) external {}
+
+> function **unLock**()     
+```js
+  /**@dev User can unlock with below params.
+   * @param lockId lockId to withdraw.
+   * @Notice if lockId is 0, updateReward function can calculate all rewards.
+   * @param amount period to increase lock.
+   * @param withRewards true: claim reward. false: claim reward.
+   */
+  function unLock(
+    uint256 lockId,
+    uint256 amount,  
+    bool withRewards  
+  ) external ;
 ```
 
-#### pause/unpause functions
-
-### Adding tokens to distribute as rewards
-
-#### addRewards: this function will retrieve rewards from caller for reward distribution.
-
+> function **getClaimableRewards**()     
+```js
+  /**@dev User can view their claimable rewards.
+   * @param lockId lockId to withdraw.
+   * @Notice if lockId is 0, updateReward function can calculate all rewards.
+   * @param user user's address.
+   * @param rewards user's reward
+   */
+  function getClaimableRewards(
+    uint256 lockId,
+    address user  
+  ) external returns(uint256 rewards);
 ```
-function addRewards(uint256 reward) external {}
+
+> function **claimRewards**()     
+```js
+  /**@dev User can get their claimable rewards.
+   * @param lockId lockId to withdraw.
+   * @Notice if lockId is 0, updateReward function can calculate all rewards.
+   * @param user user's address.
+   * @param rewards user's reward
+   */
+  function claimRewards(
+    uint256 lockId,
+    address user  
+  ) external;
+```
+
+> function **compound**()     
+```js
+  /**@dev User can lock their rewards into vault again.
+   * @param lockId lockId to compound.
+   * @param user user's address.
+   * @param rewards user's reward to compound
+   */
+  function compound(
+    uint256 lockId,
+    address user,
+    uint256 rewards  
+  ) external;
+```
+
+## **StakingVault** Contract (Admin Actions) 🤖
+
+> function **lockFor**()     
+```js
+  /**@dev admin can lock with below params for user.
+   * @param user amount to create lock.
+   * @param amount amount to create lock.
+   * @param period period to create lock.
+   * @return lockId When create lock, User can get lockId.()
+   */
+  function lockFor(
+    address user,  
+    uint256 amount,  
+    uint256 period,
+  ) external returns(uint256 lockId);
+```
+
+> function **setPause**()
+```js
+  /**
+   * @dev Admin can pause/unpause all the above main functions.
+   * @param _paused paused status(true: pause, false: unpause)
+   */
+  function setPause(
+    bool _paused
+  ) external;
+```
+> function **setRewardDistributor**()
+```js
+  /**
+   * @dev owner can set rewardDistributor using this func.
+   * @param _distributor distributor address for set
+   */  
+  function setRewardDistributor(
+    address distributor
+  ) external;
+```
+
+> function **addRewards**()
+```js
+  /**
+   * @dev distributor can add reward into vault using this function.
+   * @Notice msg.sender must be distributor. 
+   * @param reward reward to add
+   */
+  function addRewards(
+    uint reward
+  ) external;
+```
+
+
+## **StakingVault** Contract (Other Actions) 💢
+
+> function **_earn**()
+```js
+  /**
+   * @dev you can get user's rewards via this function.
+   * @param user user's address
+   * @param lockId locked id
+   * @return reward user's reward for lockId
+   */
+  function _earn(
+    address user,
+    uint256 lockId
+  ) internal returns (uint256 reward);
+```
+
+> function **_updateReward**()
+```js
+  /**
+   * @dev users can update user's rewards via this function.
+   * @param user user's address
+   */
+  function _updateReward(
+    address user,
+    uint256 lockId
+  ) internal ;
+```
+
+> function **_getRewardPerTokenForOneSecond**()
+```js
+  /**
+   * @dev users can get formula's rewards_per_token_for_one_second via this function.
+   * @return secondReward rewards_per_token_for_one_day = (total_rewards / total_locked_amount) / 4_years_in_days
+   */
+  function _getRewardPerTokenForOneSecond() internal return (uint256 secondReward);
+```
+
+> function **_lock**()
+```js
+  /**
+   * @dev internal lock function with amount and period for create lock.
+   * @param user user's address
+   * @param amount amount for lock.
+   * @param period period for lock.
+   */
+  function _lock(
+    address user,
+    uint256 amount,
+    uint256 period
+  ) internal;
 ```
